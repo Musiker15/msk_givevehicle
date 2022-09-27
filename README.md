@@ -40,3 +40,5 @@ _delveh <plate>
 
 > Example: _delveh LS 1234
 ```
+## Requirements ##
+* ESX 1.2 and above
