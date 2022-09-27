@@ -1,5 +1,5 @@
 # msk_vehicleItems
-Give or Delete Vehicles with Command or Item
+Give Vehicles with Command or Item and Delete Vehicles with Command
 
 ## Ingame Command Usage ##
 ```lua
