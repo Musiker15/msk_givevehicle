@@ -1,9 +1,4 @@
-ESX = nil
-if Config.ESX.version:match('1.2') then
-	TriggerEvent(Config.ESX.getSharedObject, function(obj) ESX = obj end)
-elseif Config.ESX.version:match('legacy') then
-    ESX = exports["es_extended"]:getSharedObject()
-end
+ESX = exports["es_extended"]:getSharedObject()
 
 for k, veh in pairs(Config.Vehicles) do
     ESX.RegisterUsableItem(k, function(source)

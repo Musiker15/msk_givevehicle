@@ -1,13 +1,8 @@
 Config = {}
 ----------------------------------------------------------------
 Config.Locale = 'de'
-Config.VersionChecker = false
+Config.VersionChecker = true
 Config.Debug = true
-
-Config.ESX = {
-    version = 'legacy', -- Set '1.2' or 'legacy'
-    getSharedObject = 'esx:getSharedObject' -- Only needed if version set to '1.2'
-}
 ----------------------------------------------------------------
 -- !!! This function is clientside AND serverside !!!
 -- Look for type == 'client' and type == 'server'

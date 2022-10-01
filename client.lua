@@ -1,14 +1,4 @@
-ESX = nil
-if Config.ESX.version:match('1.2') then
-    Citizen.CreateThread(function()
-        while ESX == nil do
-            TriggerEvent(Config.ESX.getSharedObject, function(obj) ESX = obj end)
-            Citizen.Wait(0)
-        end
-    end)
-elseif Config.ESX.version:match('legacy') then
-    ESX = exports["es_extended"]:getSharedObject()
-end
+ESX = exports["es_extended"]:getSharedObject()
 
 local Charset = {}
 for i = 65,  90 do table.insert(Charset, string.char(i)) end
