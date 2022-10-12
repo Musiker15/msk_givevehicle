@@ -37,10 +37,12 @@ Config.Plate = {
 -- You can give Player an Item and they can use the Item to get a Vehicle
 Config.Vehicles = {
     ["zentorno"] = { -- Item Name
+        label = 'Zentorno',
         model = 'zentorno', -- Vehicle Name
         categorie = 'car' -- Vehicle Categorie
     },
     ["seashark"] = { -- Item Name
+        label = 'Seashark',
         model = 'seashark', -- Vehicle Name
         categorie = 'boat' -- Vehicle Categorie
     },

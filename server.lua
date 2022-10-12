@@ -9,10 +9,10 @@ AddEventHandler('onResourceStart', function(resource)
 				local contains = table.contains(items, k)
 
 				if not contains then 
-					print('^1 Item ^3 ' .. k .. ' ^1 not exists, inserting item... ^0')
-					local insertItem = MySQL.query.await("INSERT INTO items (name, label, weight, rare, can_remove) VALUES ('" .. k .. "', '" .. string.upper(k) .. "', 1, 0, 1);")
+					debug('^1 Item ^3 ' .. v.label .. ' ^1 not exists, inserting item... ^0')
+					local insertItem = MySQL.query.await("INSERT INTO items (name, label, weight, rare, can_remove) VALUES ('" .. k .. "', '" .. v.label .. "', 1, 0, 1);")
 					if insertItem then
-						print('^2 Successfully ^3 inserted ^2 Item ^3 ' .. k .. ' ^2 in ^3 items ^0')
+						debug('^2 Successfully ^3 inserted ^2 Item ^3 ' .. v.label .. ' ^2 in ^3 items ^0')
 					end
 				end
 			end
