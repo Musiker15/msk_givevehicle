@@ -4,8 +4,8 @@ local Charset = {}
 for i = 65,  90 do table.insert(Charset, string.char(i)) end
 for i = 97, 122 do table.insert(Charset, string.char(i)) end
 
-RegisterNetEvent('msk_vehicleItems:giveVehicle')
-AddEventHandler('msk_vehicleItems:giveVehicle', function(item, veh)
+RegisterNetEvent('msk_givevehicle:giveVehicle')
+AddEventHandler('msk_givevehicle:giveVehicle', function(item, veh)
 	local playerPed = PlayerPedId()
 	local playerCoords = GetEntityCoords(playerPed)
 
@@ -16,14 +16,14 @@ AddEventHandler('msk_vehicleItems:giveVehicle', function(item, veh)
 			
 			local vehicleProps = ESX.Game.GetVehicleProperties(vehicle)
 			vehicleProps.plate = genPlate()
-			TriggerServerEvent('msk_vehicleItems:setVehicle', item, vehicleProps, veh.categorie)
+			TriggerServerEvent('msk_givevehicle:setVehicle', item, vehicleProps, veh.categorie)
 			ESX.Game.DeleteVehicle(vehicle)			
 		end
 	end)
 end)
 
-RegisterNetEvent('msk_vehicleItems:giveVehicleCommand')
-AddEventHandler('msk_vehicleItems:giveVehicleCommand', function(target, categorie, model, plate, console)
+RegisterNetEvent('msk_givevehicle:giveVehicleCommand')
+AddEventHandler('msk_givevehicle:giveVehicleCommand', function(target, categorie, model, plate, console)
 	local playerPed = PlayerPedId()
 	local playerCoords = GetEntityCoords(playerPed)
 	local newPlate
@@ -43,7 +43,7 @@ AddEventHandler('msk_vehicleItems:giveVehicleCommand', function(target, categori
 			
 			local vehicleProps = ESX.Game.GetVehicleProperties(vehicle)
 			vehicleProps.plate = newPlate
-			TriggerServerEvent('msk_vehicleItems:setVehicleCommand', target, categorie, model, newPlate, vehicleProps, console)
+			TriggerServerEvent('msk_givevehicle:setVehicleCommand', target, categorie, model, newPlate, vehicleProps, console)
 			ESX.Game.DeleteVehicle(vehicle)
 			debug('Vehicle registered')		
 		end

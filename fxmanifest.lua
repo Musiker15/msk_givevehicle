@@ -2,9 +2,9 @@ fx_version 'adamant'
 games { 'gta5' }
 
 author 'Musiker15 - MSK Scripts'
-name 'msk_vehicleItems'
+name 'msk_givevehicle'
 description 'Give or Delete Vehicles with Command or Item'
-version '1.1'
+version '1.2'
 
 lua54 'yes'
 
@@ -22,6 +22,6 @@ client_scripts {
 }
 
 server_scripts {
-	'@mysql-async/lib/MySQL.lua',
+	'@oxmysql/lib/MySQL.lua',
 	'server.lua'
 }
