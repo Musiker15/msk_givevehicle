@@ -44,4 +44,4 @@ _delveh <plate>
 ```
 ## Requirements ##
 * ESX 1.2 and above
-* mysql-async or oxmysql
+* oxmysql
