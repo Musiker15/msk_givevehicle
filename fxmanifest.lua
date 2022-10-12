@@ -25,3 +25,8 @@ server_scripts {
 	'@oxmysql/lib/MySQL.lua',
 	'server.lua'
 }
+
+dependencies {
+	'es_extended',
+	'oxmysql'
+}
