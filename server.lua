@@ -32,7 +32,7 @@ RegisterServerEvent('msk_givevehicle:setVehicle')
 AddEventHandler('msk_givevehicle:setVehicle', function(item, props, vehicleType)
 	local src = source
 	local xPlayer = ESX.GetPlayerFromId(src)
-	local data = MySQL.query('SELECT * FROM owned_vehicles WHERE plate = @plate', { 
+	local data = MySQL.query.await('SELECT * FROM owned_vehicles WHERE plate = @plate', { 
 		["@plate"] = props.plate
 	})
 
