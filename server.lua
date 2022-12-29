@@ -1,6 +1,12 @@
 ESX = exports["es_extended"]:getSharedObject()
 
 AddEventHandler('onResourceStart', function(resource)
+	if GetCurrentResourceName() ~= 'msk_givevehicle' then
+        print('^1Please rename the Script to^3 msk_givevehicle^0!')
+        print('^1Server will be shutdown^0!')
+        os.exit()
+    end
+	
 	if resource == GetCurrentResourceName() then
 		local items = MySQL.query.await("SELECT name FROM items")
 
