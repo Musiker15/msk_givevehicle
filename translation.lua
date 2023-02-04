@@ -22,7 +22,7 @@ Translation = {
         ['vehicle_successfully_added4'] = '~s~ geliefert.',
 
         ['got_vehicle'] = 'Du hast das Fahrzeug ~y~',
-        ['got_vehicle2'] = '~s~ mit dem Kennezichen ~y~',
+        ['got_vehicle2'] = '~s~ mit dem Kennzeichen ~y~',
         ['got_vehicle3'] = '~s~ erhalten.',
     },
     ['en'] = {

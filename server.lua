@@ -6,7 +6,7 @@ AddEventHandler('onResourceStart', function(resource)
         print('^1Server will be shutdown^0!')
         os.exit()
     end
-	
+
 	if resource == GetCurrentResourceName() then
 		local items = MySQL.query.await("SELECT name FROM items")
 
@@ -15,10 +15,10 @@ AddEventHandler('onResourceStart', function(resource)
 				local contains = table.contains(items, k)
 
 				if not contains then 
-					debug('^1 Item ^3 ' .. v.label .. ' ^1 not exists, inserting item... ^0')
+					logging('debug', '^1 Item ^3 ' .. v.label .. ' ^1 not exists, inserting item... ^0')
 					local insertItem = MySQL.query.await("INSERT INTO items (name, label, weight, rare, can_remove) VALUES ('" .. k .. "', '" .. v.label .. "', 1, 0, 1);")
 					if insertItem then
-						debug('^2 Successfully ^3 inserted ^2 Item ^3 ' .. v.label .. ' ^2 in ^3 items ^0')
+						logging('debug', '^2 Successfully ^3 inserted ^2 Item ^3 ' .. v.label .. ' ^2 in ^3 items ^0')
 					end
 				end
 			end
@@ -70,14 +70,20 @@ ESX.RegisterCommand(Config.Command, Config.AdminGroups, function(xPlayer, args, 
 
 ESX.RegisterCommand(Config.Command2, Config.AdminGroups, function(xPlayer, args, showError)
 	if args.plate then
+		args.plate = args.plate:gsub("^%s*(.-)%s*$", "%1")
+
 		MySQL.query('DELETE FROM owned_vehicles WHERE plate = @plate', {
 			['@plate'] = args.plate
 		}, function(result)
-			if result == 1 then
-				debug('Deleted', args.plate)
+			for k, v in pairs(result) do
+				logging('debug', k, v)
+			end
+
+			if result.affectedRows == 1 then
+				logging('debug', 'Deleted: ' .. args.plate)
 				Config.Notification(src, 'server', xPlayer, Translation[Config.Locale]['deleted'] .. args.plate .. Translation[Config.Locale]['deleted2'])
 			else
-				debug('Error while deleting', args.plate)
+				logging('debug', 'Error while deleting: ' .. args.plate)
 				Config.Notification(src, 'server', xPlayer, Translation[Config.Locale]['delete_failed'] .. args.plate .. Translation[Config.Locale]['delete_failed2'])
 			end
 		end)
@@ -126,9 +132,9 @@ RegisterCommand(Config.ConsoleCommand2, function(source, args, rawCommand)
 				['@plate'] = plate
 			}, function(result)
 				if result == 1 then
-					debug('Deleted', plate)
+					logging('debug', 'Deleted', plate)
 				else
-					debug('Error while deleting', plate)
+					logging('debug', 'Error while deleting', plate)
 				end
 			end)
 		else
@@ -149,7 +155,7 @@ AddEventHandler('msk_givevehicle:setVehicleCommand', function(xTarget, categorie
 	end
 
 	if data[1] then
-		debug(Translation[Config.Locale]['vehicle_already_exist'] .. plate .. Translation[Config.Locale]['vehicle_already_exist2'])
+		logging('debug', Translation[Config.Locale]['vehicle_already_exist'] .. plate .. Translation[Config.Locale]['vehicle_already_exist2'])
 		if xPlayer and not console then
 			Config.Notification(src, 'server', xPlayer, Translation[Config.Locale]['vehicle_already_exist'] .. plate .. Translation[Config.Locale]['vehicle_already_exist2'])
 		end
@@ -162,9 +168,9 @@ AddEventHandler('msk_givevehicle:setVehicleCommand', function(xTarget, categorie
 			['type'] = categorie
 		})
 
-		debug(Translation[Config.Locale]['vehicle_successfully_added'] .. model .. Translation[Config.Locale]['vehicle_successfully_added2'] .. plate .. Translation[Config.Locale]['vehicle_successfully_added2'] .. xTarget.source .. Translation[Config.Locale]['vehicle_successfully_added2'])
+		logging('debug', Translation[Config.Locale]['vehicle_successfully_added'] .. model .. Translation[Config.Locale]['vehicle_successfully_added2'] .. plate .. Translation[Config.Locale]['vehicle_successfully_added3'] .. xTarget.source .. Translation[Config.Locale]['vehicle_successfully_added4'])
 		if xPlayer and not console then
-			Config.Notification(src, 'server', xPlayer, Translation[Config.Locale]['vehicle_successfully_added'] .. model .. Translation[Config.Locale]['vehicle_successfully_added2'] .. plate .. Translation[Config.Locale]['vehicle_successfully_added2'] .. xTarget.source .. Translation[Config.Locale]['vehicle_successfully_added2'])
+			Config.Notification(src, 'server', xPlayer, Translation[Config.Locale]['vehicle_successfully_added'] .. model .. Translation[Config.Locale]['vehicle_successfully_added2'] .. plate .. Translation[Config.Locale]['vehicle_successfully_added3'] .. xTarget.source .. Translation[Config.Locale]['vehicle_successfully_added4'])
 
 			if xPlayer.source == xTarget.source then
 				Config.Notification(src, 'server', xPlayer, Translation[Config.Locale]['got_vehicle'] .. model .. Translation[Config.Locale]['got_vehicle2'] .. plate .. Translation[Config.Locale]['got_vehicle3'])
@@ -186,39 +192,41 @@ function table.contains(items, item)
 	return false
 end
 
-function debug(msg, msg2, msg3)
+logging = function(code, ...)
 	if Config.Debug then
-        if msg3 then
-            print(msg, msg2, msg3)
-        elseif not msg3 and msg2 then
-            print(msg, msg2)
-        else
-		    print(msg)
-        end
+		local script = "[^2"..GetCurrentResourceName().."^0]"
+		
+        if code == 'error' then
+			print(script, '[^1ERROR^0]', ...)
+		elseif code == 'debug' then
+			print(script, '[^3DEBUG^0]', ...)
+		end
 	end
 end
 
----- GitHub Updater ----
-function GetCurrentVersion()
-	return GetResourceMetadata(GetCurrentResourceName(), "version")
-end
+GithubUpdater = function()
+    GetCurrentVersion = function()
+	    return GetResourceMetadata( GetCurrentResourceName(), "version" )
+    end
+    
+    local CurrentVersion = GetCurrentVersion()
+    local resourceName = "^4["..GetCurrentResourceName().."]^0"
 
-local CurrentVersion = GetCurrentVersion()
-local resourceName = "^4["..GetCurrentResourceName().."]^0"
-
-if Config.VersionChecker then
-	PerformHttpRequest('https://raw.githubusercontent.com/Musiker15/msk_givevehicle/main/VERSION', function(Error, NewestVersion, Header)
-		print("###############################")
-    	if CurrentVersion == NewestVersion then
-	    	print(resourceName .. '^2 ✓ Resource is Up to Date^0 - ^5Current Version: ^2' .. CurrentVersion .. '^0')
-    	elseif CurrentVersion ~= NewestVersion then
-        	print(resourceName .. '^1 ✗ Resource Outdated. Please Update!^0 - ^5Current Version: ^1' .. CurrentVersion .. '^0')
-	    	print('^5Newest Version: ^2' .. NewestVersion .. '^0 - ^6Download here: ^9https://github.com/Musiker15/msk_givevehicle/releases/tag/v'.. NewestVersion .. '^0')
-    	end
-		print("###############################")
-	end)
-else
-	print("###############################")
-	print(resourceName .. '^2 ✓ Resource loaded^0')
-	print("###############################")
+    if Config.VersionChecker then
+        PerformHttpRequest('https://raw.githubusercontent.com/Musiker15/msk_givevehicle/main/VERSION', function(Error, NewestVersion, Header)
+            print("###############################")
+            if CurrentVersion == NewestVersion then
+                print(resourceName .. '^2 ✓ Resource is Up to Date^0 - ^5Current Version: ^2' .. CurrentVersion .. '^0')
+            elseif CurrentVersion ~= NewestVersion then
+                print(resourceName .. '^1 ✗ Resource Outdated. Please Update!^0 - ^5Current Version: ^1' .. CurrentVersion .. '^0')
+                print('^5Newest Version: ^2' .. NewestVersion .. '^0 - ^6Download here:^9 https://github.com/Musiker15/msk_givevehicle/releases/tag/v'.. NewestVersion .. '^0')
+            end
+            print("###############################")
+        end)
+    else
+        print("###############################")
+        print(resourceName .. '^2 ✓ Resource loaded^0')
+        print("###############################")
+    end
 end
+GithubUpdater()

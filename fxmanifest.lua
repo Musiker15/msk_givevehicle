@@ -4,7 +4,7 @@ games { 'gta5' }
 author 'Musiker15 - MSK Scripts'
 name 'msk_givevehicle'
 description 'Give or Delete Vehicles with Command or Item'
-version '1.3'
+version '1.3.1'
 
 lua54 'yes'
 

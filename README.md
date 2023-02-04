@@ -5,7 +5,7 @@ Give Vehicles with Command or Item and Delete Vehicles with Command
 
 ## Ingame Command Usage ##
 ```lua
---PLATE is OPTIONAL
+-- PLATE is OPTIONAL
 
 /giveveh <playerID> <categorie> <carModel> <plate>
 /giveveh <playerID> <categorie> <carModel> <plate>
@@ -25,7 +25,7 @@ Give Vehicles with Command or Item and Delete Vehicles with Command
 
 ## Console Command Usage ##
 ```lua
---PLATE is OPTIONAL
+-- PLATE is OPTIONAL
 
 _giveveh <playerID> <categorie> <carModel> <plate>
 _giveveh <playerID> <categorie> <carModel> <plate>
@@ -43,5 +43,5 @@ _delveh <plate>
 > Example: _delveh LS 1234
 ```
 ## Requirements ##
-* ESX 1.2 and above
-* oxmysql
+* [ESX 1.2 and above](https://github.com/esx-framework/esx_core)
+* [oxmysql](https://github.com/overextended/oxmysql)

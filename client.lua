@@ -1,6 +1,7 @@
 ESX = exports["es_extended"]:getSharedObject()
 
 local Charset = {}
+for i = 48,  57 do table.insert(Charset, string.char(i)) end
 for i = 65,  90 do table.insert(Charset, string.char(i)) end
 for i = 97, 122 do table.insert(Charset, string.char(i)) end
 
@@ -45,7 +46,7 @@ AddEventHandler('msk_givevehicle:giveVehicleCommand', function(target, categorie
 			vehicleProps.plate = newPlate
 			TriggerServerEvent('msk_givevehicle:setVehicleCommand', target, categorie, model, newPlate, vehicleProps, console)
 			ESX.Game.DeleteVehicle(vehicle)
-			debug('Vehicle registered')		
+			logging('debug', 'Vehicle registered with plate ' .. newPlate)
 		end
 	end)
 
@@ -55,7 +56,7 @@ AddEventHandler('msk_givevehicle:giveVehicleCommand', function(target, categorie
 	end
 end)
 
-function genPlate()
+genPlate = function()
 	local plate
 	if Config.Plate.format:match('XXX XXX') then
 		plate = string.upper(GetRandomLetter(3)) .. ' ' .. math.random(001, 999)
@@ -70,7 +71,7 @@ function genPlate()
 	return plate
 end
 
-function GetRandomLetter(length)
+GetRandomLetter = function(length)
 	Wait(0)
 	if length > 0 then
 		return GetRandomLetter(length - 1) .. Charset[math.random(1, #Charset)]
@@ -79,14 +80,14 @@ function GetRandomLetter(length)
 	end
 end
 
-function debug(msg, msg2, msg3)
+logging = function(code, ...)
 	if Config.Debug then
-        if msg3 then
-            print(msg, msg2, msg3)
-        elseif not msg3 and msg2 then
-            print(msg, msg2)
-        else
-		    print(msg)
-        end
+		local script = "[^2"..GetCurrentResourceName().."^0]"
+
+        if code == 'error' then
+			print(script, '[^1ERROR^0]', ...)
+		elseif code == 'debug' then
+			print(script, '[^3DEBUG^0]', ...)
+		end
 	end
 end
