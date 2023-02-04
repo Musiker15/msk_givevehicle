@@ -59,7 +59,7 @@ AddEventHandler('msk_givevehicle:setVehicle', function(item, props, vehicleType)
 end)
 
 -- Ingame Commands
-ESX.RegisterCommand(Config.Command, Config.AdminGroups, function(xPlayer, args, showError)
+ESX.RegisterCommand(Config.Command, Config.AdminGroups, function(xPlayer, args, showError) -- /giveveh <playerID> <categorie> <carModel> <plate>
 	xPlayer.triggerEvent('msk_givevehicle:giveVehicleCommand', args.player, args.type, args.vehicle, args.plate)
   end, false, {help = 'Give someone a Vehicle', arguments = {
 	{name = 'player', help = 'PlayerID', type = 'player'},
@@ -68,17 +68,13 @@ ESX.RegisterCommand(Config.Command, Config.AdminGroups, function(xPlayer, args, 
 	{name = 'plate', help = '"Plate" (optional)', type = 'string'}
 }})
 
-ESX.RegisterCommand(Config.Command2, Config.AdminGroups, function(xPlayer, args, showError)
+ESX.RegisterCommand(Config.Command2, Config.AdminGroups, function(xPlayer, args, showError) -- /delveh <plate>
 	if args.plate then
 		args.plate = args.plate:gsub("^%s*(.-)%s*$", "%1")
 
 		MySQL.query('DELETE FROM owned_vehicles WHERE plate = @plate', {
 			['@plate'] = args.plate
 		}, function(result)
-			for k, v in pairs(result) do
-				logging('debug', k, v)
-			end
-
 			if result.affectedRows == 1 then
 				logging('debug', 'Deleted: ' .. args.plate)
 				Config.Notification(src, 'server', xPlayer, Translation[Config.Locale]['deleted'] .. args.plate .. Translation[Config.Locale]['deleted2'])
@@ -93,7 +89,7 @@ ESX.RegisterCommand(Config.Command2, Config.AdminGroups, function(xPlayer, args,
 }})
 
 -- Console Commands
-RegisterCommand(Config.ConsoleCommand, function(source, args, rawCommand)
+RegisterCommand(Config.ConsoleCommand, function(source, args, rawCommand) -- _giveveh <playerID> <categorie> <carModel> <plate>
     if (source == 0) then
 		local playerID = args[1]
 
@@ -116,7 +112,7 @@ RegisterCommand(Config.ConsoleCommand, function(source, args, rawCommand)
     end
 end)
 
-RegisterCommand(Config.ConsoleCommand2, function(source, args, rawCommand)
+RegisterCommand(Config.ConsoleCommand2, function(source, args, rawCommand) -- _delveh <plate>
     if (source == 0) then
 		if args[1] then
 			local plate = args[1]
