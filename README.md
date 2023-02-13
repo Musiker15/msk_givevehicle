@@ -18,10 +18,10 @@ Give Vehicles with Command or Item and Delete Vehicles with Command
 
 /givejobveh <playerID> <categorie> <carModel> <job> <bool> <plate>
 
-> Example: /givejobveh 1 car zentorno 'police' '1' "LS 1234"
-> Example: /givejobveh 1 boat dinghy 'police' '1' "LS 1234"
-> Example: /givejobveh 1 aircraft cuban800 'police' '1' "LS 1234"
-> Example: /givejobveh 1 helicopter maverick 'police' '1' "LS 1234"
+> Example: /givejobveh 1 car zentorno police 1 "LS 1234"
+> Example: /givejobveh 1 boat dinghy police 1 "LS 1234"
+> Example: /givejobveh 1 aircraft cuban800 police 1 "LS 1234"
+> Example: /givejobveh 1 helicopter maverick police 1 "LS 1234"
 ```
 ```lua
 /delveh <plate>
@@ -46,10 +46,10 @@ _giveveh <playerID> <categorie> <carModel> <plate>
 
 _givejobveh <playerID> <categorie> <carModel> <job> <bool> <plate>
 
-> Example: _givejobveh 1 car zentorno 'police' '1' LS 1234
-> Example: _givejobveh 1 boat dinghy 'police' '1' LS 1234
-> Example: _givejobveh 1 aircraft cuban800 'police' '1' LS 1234
-> Example: _givejobveh 1 helicopter maverick 'police' '1' LS 1234
+> Example: _givejobveh 1 car zentorno police 1 LS 1234
+> Example: _givejobveh 1 boat dinghy police 1 LS 1234
+> Example: _givejobveh 1 aircraft cuban800 police 1 LS 1234
+> Example: _givejobveh 1 helicopter maverick police 1 LS 1234
 ```
 ```lua
 _delveh <plate>
