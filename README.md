@@ -14,7 +14,7 @@ Give Vehicles with Command or Item and Delete Vehicles with Command
 ```
 ```lua
 -- PLATE is OPTIONAL
--- BOOL = '1' or '0' // 1 means identifier = job // 0 means identifier = xPlayer.identifier
+-- BOOL = 1 or 0 // 1 means identifier = job // 0 means identifier = xPlayer.identifier
 
 /givejobveh <playerID> <categorie> <carModel> <job> <bool> <plate>
 
@@ -42,7 +42,7 @@ _giveveh <playerID> <categorie> <carModel> <plate>
 ```
 ```lua
 -- PLATE is OPTIONAL
--- BOOL = '1' or '0' // 1 means identifier = job // 0 means identifier = xPlayer.identifier
+-- BOOL = 1 or 0 // 1 means identifier = job // 0 means identifier = xPlayer.identifier
 
 _givejobveh <playerID> <categorie> <carModel> <job> <bool> <plate>
 
