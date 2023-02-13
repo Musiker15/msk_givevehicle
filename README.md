@@ -35,10 +35,10 @@ Give Vehicles with Command or Item and Delete Vehicles with Command
 
 _giveveh <playerID> <categorie> <carModel> <plate>
 
-> Example: _giveveh 1 car zentorno LS 1234
-> Example: _giveveh 1 boat dinghy LS 1234
-> Example: _giveveh 1 aircraft cuban800 LS 1234
-> Example: _giveveh 1 helicopter maverick LS 1234
+> Example: _giveveh 1 car zentorno "LS 1234
+> Example: _giveveh 1 boat dinghy "LS 1234
+> Example: _giveveh 1 aircraft cuban800 "LS 1234
+> Example: _giveveh 1 helicopter maverick "LS 1234
 ```
 ```lua
 -- PLATE is OPTIONAL
@@ -46,15 +46,15 @@ _giveveh <playerID> <categorie> <carModel> <plate>
 
 _givejobveh <playerID> <categorie> <carModel> <job> <bool> <plate>
 
-> Example: _givejobveh 1 car zentorno police 1 LS 1234
-> Example: _givejobveh 1 boat dinghy police 1 LS 1234
-> Example: _givejobveh 1 aircraft cuban800 police 1 LS 1234
-> Example: _givejobveh 1 helicopter maverick police 1 LS 1234
+> Example: _givejobveh 1 car zentorno police 1 "LS 1234
+> Example: _givejobveh 1 boat dinghy police 1 "LS 1234
+> Example: _givejobveh 1 aircraft cuban800 police 1 "LS 1234
+> Example: _givejobveh 1 helicopter maverick police 1 "LS 1234
 ```
 ```lua
 _delveh <plate>
 
-> Example: _delveh LS 1234
+> Example: _delveh "LS 1234
 ```
 ## Requirements ##
 * [ESX 1.2 and above](https://github.com/esx-framework/esx_core)
