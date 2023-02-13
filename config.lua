@@ -5,28 +5,26 @@ Config.VersionChecker = true
 Config.Debug = true
 ----------------------------------------------------------------
 -- !!! This function is clientside AND serverside !!!
--- Look for type == 'client' and type == 'server'
-Config.Notification = function(src, type, xPlayer, message) -- xPlayer = ESX.GetPlayerFromId(src)
-    if type == 'client' then -- clientside
-        ESX.ShowNotification(message) -- replace this with your Notify
-    elseif type == 'server' then -- serverside
-        xPlayer.showNotification(message) -- replace this with your Notify
+Config.Notification = function(source, xPlayer, message) 
+    if IsDuplicityVersion() then -- serverside
+        xPlayer.showNotification(message)
+    else -- clientside
+        ESX.ShowNotification(message)
     end
 end
 ----------------------------------------------------------------
-Config.MySQL = {
-    type = 'type', -- Type Column
-    stored = 'stored', -- Stored Column
-}
-
 Config.AdminGroups = {'superadmin', 'admin'} -- You can set multiple groups
+
 -- Ingame Commands
 Config.Command = 'giveveh' -- Read the Readme.md for Command Usage
 Config.Command2 = 'delveh' -- Read the Readme.md for Command Usage
+Config.Command3 = 'givejobveh' -- Read the Readme.md for Command Usage
+
 -- Console Commands
 Config.ConsoleCommand = '_giveveh' -- Read the Readme.md for Command Usage
 Config.ConsoleCommand2 = '_delveh' -- Read the Readme.md for Command Usage
-
+Config.ConsoleCommand3 = '_givejobveh' -- Read the Readme.md for Command Usage
+----------------------------------------------------------------
 Config.Plate = {
     format = 'XXX XXX', -- 'XXX XXX' or 'XX XXXX'
     

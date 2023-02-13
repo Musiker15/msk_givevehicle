@@ -43,7 +43,7 @@ AddEventHandler('msk_givevehicle:setVehicle', function(item, props, vehicleType)
 	})
 
 	if data[1] then
-		Config.Notification(src, 'server', xPlayer, Translation[Config.Locale]['item_already_exist']) -- Plate already exist
+		Config.Notification(src, xPlayer, Translation[Config.Locale]['item_already_exist']) -- Plate already exist
 	else
 		MySQL.query('INSERT INTO owned_vehicles (owner, plate, vehicle, stored, type) VALUES (@owner, @plate, @vehicle, @stored, @type)', {
 			['@owner']   = xPlayer.identifier,
@@ -54,7 +54,7 @@ AddEventHandler('msk_givevehicle:setVehicle', function(item, props, vehicleType)
 		})
 
 		xPlayer.removeInventoryItem(item, 1)
-		Config.Notification(src, 'server', xPlayer, Translation[Config.Locale]['item_success'])
+		Config.Notification(src, xPlayer, Translation[Config.Locale]['item_success'])
 	end
 end)
 
@@ -70,22 +70,31 @@ ESX.RegisterCommand(Config.Command, Config.AdminGroups, function(xPlayer, args, 
 
 ESX.RegisterCommand(Config.Command2, Config.AdminGroups, function(xPlayer, args, showError) -- /delveh <plate>
 	if args.plate then
-		args.plate = args.plate:gsub("^%s*(.-)%s*$", "%1")
-
 		MySQL.query('DELETE FROM owned_vehicles WHERE plate = @plate', {
 			['@plate'] = args.plate
 		}, function(result)
 			if result.affectedRows == 1 then
 				logging('debug', 'Deleted: ' .. args.plate)
-				Config.Notification(src, 'server', xPlayer, Translation[Config.Locale]['deleted'] .. args.plate .. Translation[Config.Locale]['deleted2'])
+				Config.Notification(src, xPlayer, Translation[Config.Locale]['deleted'] .. args.plate .. Translation[Config.Locale]['deleted2'])
 			else
 				logging('debug', 'Error while deleting: ' .. args.plate)
-				Config.Notification(src, 'server', xPlayer, Translation[Config.Locale]['delete_failed'] .. args.plate .. Translation[Config.Locale]['delete_failed2'])
+				Config.Notification(src, xPlayer, Translation[Config.Locale]['delete_failed'] .. args.plate .. Translation[Config.Locale]['delete_failed2'])
 			end
 		end)
 	end
   end, false, {help = 'Delete a Vehicle from Database', arguments = {
 	{name = 'plate', help = '"Plate"', type = 'string'}
+}})
+
+ESX.RegisterCommand(Config.Command3, Config.AdminGroups, function(xPlayer, args, showError) -- /givejobveh <playerID> <categorie> <carModel> <job> <bool> <plate>
+	xPlayer.triggerEvent('msk_givevehicle:giveVehicleCommand', args.player, args.type, args.vehicle, args.plate, nil, args.job, args.identifier)
+  end, false, {help = 'Give someone a Vehicle', arguments = {
+	{name = 'player', help = 'PlayerID', type = 'player'},
+	{name = 'type', help = 'Categorie', type = 'string'},
+	{name = 'vehicle', help = 'Vehiclename', type = 'string'},
+	{name = 'job', help = 'Job', type = 'string'},
+	{name = 'identifier', help = 'Identifier', type = 'string'},
+	{name = 'plate', help = '"Plate" (optional)', type = 'string'}
 }})
 
 -- Console Commands
@@ -139,13 +148,37 @@ RegisterCommand(Config.ConsoleCommand2, function(source, args, rawCommand) -- _d
     end
 end)
 
+RegisterCommand(Config.ConsoleCommand3, function(source, args, rawCommand) -- _givejobveh <playerID> <categorie> <carModel> <job> <bool> <plate>
+    if (source == 0) then
+		local playerID = args[1]
+
+		if args[1] and args[2] and args[3] and args[4] and args[5] and args[6] then
+			local plate = args[6]
+
+			if #args > 6 then
+				for i=7, #args do
+					plate = plate.." "..args[i]
+				end
+			end
+			plate = string.upper(plate)
+
+			TriggerClientEvent('msk_givevehicle:giveVehicleCommand', playerID, playerID, args[2], args[3], plate, true, args[4], args[5])
+		elseif args[1] and args[2] and args[3] and args[4] and args[5] and not args[6] then
+			TriggerClientEvent('msk_givevehicle:giveVehicleCommand', playerID, playerID, args[2], args[3], nil, true, args[4], args[5])
+		else
+			print('^1SYNTAX ERROR: ^5_givejobveh <playerID> <categorie> <carModel> <job> <bool> <plate> ^0| Plate is optional')
+		end
+    end
+end)
+
 RegisterServerEvent('msk_givevehicle:setVehicleCommand')
-AddEventHandler('msk_givevehicle:setVehicleCommand', function(xTarget, categorie, model, plate, props, console)
+AddEventHandler('msk_givevehicle:setVehicleCommand', function(xTarget, categorie, model, plate, props, console, job, bool)
 	local src = source
 	local xPlayer = ESX.GetPlayerFromId(src)
 	local data = MySQL.query.await('SELECT * FROM owned_vehicles WHERE plate = @plate', { 
 		["@plate"] = plate
 	})
+
 	if console then
 		xTarget = ESX.GetPlayerFromId(xTarget)
 	end
@@ -153,28 +186,47 @@ AddEventHandler('msk_givevehicle:setVehicleCommand', function(xTarget, categorie
 	if data[1] then
 		logging('debug', Translation[Config.Locale]['vehicle_already_exist'] .. plate .. Translation[Config.Locale]['vehicle_already_exist2'])
 		if xPlayer and not console then
-			Config.Notification(src, 'server', xPlayer, Translation[Config.Locale]['vehicle_already_exist'] .. plate .. Translation[Config.Locale]['vehicle_already_exist2'])
+			Config.Notification(src, xPlayer, Translation[Config.Locale]['vehicle_already_exist'] .. plate .. Translation[Config.Locale]['vehicle_already_exist2'])
 		end
 	else
-		MySQL.query('INSERT INTO owned_vehicles (owner, plate, vehicle, stored, type) VALUES (@owner, @plate, @vehicle, @stored, @type)', {
-			['@owner']   = xTarget.identifier,
-			['@plate']   = plate,
-			['@vehicle'] = json.encode(props),
-			['@stored']  = 1,
-			['type'] = categorie
-		})
+		if job then
+			local identifier
+
+			if tostring(bool) == '1' then
+				identifier = job
+			elseif tostring(bool) == '0' then
+				identifier = xTarget.identifier
+			end
+
+			MySQL.query('INSERT INTO owned_vehicles (owner, plate, vehicle, stored, type, job) VALUES (@owner, @plate, @vehicle, @stored, @type, @job)', {
+				['@owner']   = identifier,
+				['@plate']   = plate,
+				['@vehicle'] = json.encode(props),
+				['@stored']  = 1,
+				['type'] = categorie,
+				['job'] = job
+			})
+		else
+			MySQL.query('INSERT INTO owned_vehicles (owner, plate, vehicle, stored, type) VALUES (@owner, @plate, @vehicle, @stored, @type)', {
+				['@owner']   = xTarget.identifier,
+				['@plate']   = plate,
+				['@vehicle'] = json.encode(props),
+				['@stored']  = 1,
+				['type'] = categorie
+			})
+		end
 
 		logging('debug', Translation[Config.Locale]['vehicle_successfully_added'] .. model .. Translation[Config.Locale]['vehicle_successfully_added2'] .. plate .. Translation[Config.Locale]['vehicle_successfully_added3'] .. xTarget.source .. Translation[Config.Locale]['vehicle_successfully_added4'])
 		if xPlayer and not console then
-			Config.Notification(src, 'server', xPlayer, Translation[Config.Locale]['vehicle_successfully_added'] .. model .. Translation[Config.Locale]['vehicle_successfully_added2'] .. plate .. Translation[Config.Locale]['vehicle_successfully_added3'] .. xTarget.source .. Translation[Config.Locale]['vehicle_successfully_added4'])
+			Config.Notification(src, xPlayer, Translation[Config.Locale]['vehicle_successfully_added'] .. model .. Translation[Config.Locale]['vehicle_successfully_added2'] .. plate .. Translation[Config.Locale]['vehicle_successfully_added3'] .. xTarget.source .. Translation[Config.Locale]['vehicle_successfully_added4'])
 
 			if xPlayer.source == xTarget.source then
-				Config.Notification(src, 'server', xPlayer, Translation[Config.Locale]['got_vehicle'] .. model .. Translation[Config.Locale]['got_vehicle2'] .. plate .. Translation[Config.Locale]['got_vehicle3'])
+				Config.Notification(src, xPlayer, Translation[Config.Locale]['got_vehicle'] .. model .. Translation[Config.Locale]['got_vehicle2'] .. plate .. Translation[Config.Locale]['got_vehicle3'])
 			end
 		end
 
 		if xPlayer and console then
-			Config.Notification(src, 'server', xPlayer, Translation[Config.Locale]['got_vehicle'] .. model .. Translation[Config.Locale]['got_vehicle2'] .. plate .. Translation[Config.Locale]['got_vehicle3'])
+			Config.Notification(src, xPlayer, Translation[Config.Locale]['got_vehicle'] .. model .. Translation[Config.Locale]['got_vehicle2'] .. plate .. Translation[Config.Locale]['got_vehicle3'])
 		end
 	end
 end)

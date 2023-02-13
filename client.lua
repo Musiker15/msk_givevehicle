@@ -24,11 +24,11 @@ AddEventHandler('msk_givevehicle:giveVehicle', function(item, veh)
 end)
 
 RegisterNetEvent('msk_givevehicle:giveVehicleCommand')
-AddEventHandler('msk_givevehicle:giveVehicleCommand', function(target, categorie, model, plate, console)
+AddEventHandler('msk_givevehicle:giveVehicleCommand', function(target, categorie, model, plate, console, job, bool)
 	local playerPed = PlayerPedId()
 	local playerCoords = GetEntityCoords(playerPed)
 	local newPlate
-	local carExist  = false
+	local carExist = false
 
 	if plate then
 		newPlate = plate
@@ -44,7 +44,8 @@ AddEventHandler('msk_givevehicle:giveVehicleCommand', function(target, categorie
 			
 			local vehicleProps = ESX.Game.GetVehicleProperties(vehicle)
 			vehicleProps.plate = newPlate
-			TriggerServerEvent('msk_givevehicle:setVehicleCommand', target, categorie, model, newPlate, vehicleProps, console)
+
+			TriggerServerEvent('msk_givevehicle:setVehicleCommand', target, categorie, model, newPlate, vehicleProps, console, job, bool)
 			ESX.Game.DeleteVehicle(vehicle)
 			logging('debug', 'Vehicle registered with plate ' .. newPlate)
 		end
@@ -52,7 +53,7 @@ AddEventHandler('msk_givevehicle:giveVehicleCommand', function(target, categorie
 
 	Wait(2000)
 	if not carExist then
-		Config.Notification(source, 'client', nil, Translation[Config.Locale]['clientCommand'] .. model .. Translation[Config.Locale]['clientCommand2'])
+		Config.Notification(source, nil, Translation[Config.Locale]['clientCommand'] .. model .. Translation[Config.Locale]['clientCommand2'])
 	end
 end)
 
