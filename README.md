@@ -28,6 +28,12 @@ Give Vehicles with Command or Item and Delete Vehicles with Command
 
 > Example: /delveh "LS 1234"
 ```
+```lua
+-- Spawns a owned vehicle at PlayerID coords
+/spawnveh <playerID> <plate>
+
+> Example: /spawnveh 1 "LS 1234"
+```
 
 ## Console Command Usage ##
 ```lua
@@ -55,6 +61,12 @@ _givejobveh <playerID> <categorie> <carModel> <job> <bool> <plate>
 _delveh <plate>
 
 > Example: _delveh "LS 1234"
+```
+```lua
+-- Spawns a owned vehicle at PlayerID coords
+spawnveh <playerID> <plate>
+
+> Example: spawnveh 1 "LS 1234"
 ```
 ## Requirements ##
 * [ESX 1.2 and above](https://github.com/esx-framework/esx_core)

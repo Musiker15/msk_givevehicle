@@ -19,12 +19,21 @@ Config.AdminGroups = {'superadmin', 'admin'} -- You can set multiple groups
 Config.Command = 'giveveh' -- Read the Readme.md for Command Usage
 Config.Command2 = 'delveh' -- Read the Readme.md for Command Usage
 Config.Command3 = 'givejobveh' -- Read the Readme.md for Command Usage
+Config.Command4 = 'spawnveh' -- Read the Readme.md for Command Usage // You can use this at the console too
 
 -- Console Commands
 Config.ConsoleCommand = '_giveveh' -- Read the Readme.md for Command Usage
 Config.ConsoleCommand2 = '_delveh' -- Read the Readme.md for Command Usage
 Config.ConsoleCommand3 = '_givejobveh' -- Read the Readme.md for Command Usage
 ----------------------------------------------------------------
+Config.FuelSystem = function(vehicle, fuelLevel) -- Only for Command4: spawnveh
+    -- LegacyFuel
+    exports['LegacyFuel']:SetFuel(vehicle, fuelLevel)
+
+    -- FiveM Native
+    -- SetVehicleFuelLevel(vehicle, fuelLevel)
+end
+
 Config.Plate = {
     format = 'XXX XXX', -- 'XXX XXX' or 'XX XXXX'
     

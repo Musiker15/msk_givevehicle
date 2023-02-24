@@ -5,6 +5,18 @@ for i = 48,  57 do table.insert(Charset, string.char(i)) end
 for i = 65,  90 do table.insert(Charset, string.char(i)) end
 for i = 97, 122 do table.insert(Charset, string.char(i)) end
 
+RegisterNetEvent('msk_givevehicle:spawnVehicle')
+AddEventHandler('msk_givevehicle:spawnVehicle', function(props)
+	local playerPed = PlayerPedId()
+
+	ESX.Game.SpawnVehicle(props.model, GetEntityCoords(playerPed), GetEntityHeading(playerPed), function(vehicle)
+		if DoesEntityExist(vehicle) then
+			ESX.Game.SetVehicleProperties(vehicle, props)
+			Config.FuelSystem(vehicle, props.fuelLevel)
+		end
+	end)
+end)
+
 RegisterNetEvent('msk_givevehicle:giveVehicle')
 AddEventHandler('msk_givevehicle:giveVehicle', function(item, veh)
 	local playerPed = PlayerPedId()

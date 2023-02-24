@@ -97,6 +97,21 @@ ESX.RegisterCommand(Config.Command3, Config.AdminGroups, function(xPlayer, args,
 	{name = 'plate', help = '"Plate" (optional)', type = 'string'}
 }})
 
+-- You can use this command at the console too
+ESX.RegisterCommand(Config.Command4, Config.AdminGroups, function(xPlayer, args, showError) -- /spawnveh <playerID> <plate>
+	MySQL.query("SELECT * FROM owned_vehicles WHERE plate = @plate", {
+		['@plate'] = args.plate
+	}, function(result)
+		if result and result[1] then
+			args.player.triggerEvent('msk_givevehicle:spawnVehicle', json.decode(result[1].vehicle))
+			MySQL.query("UPDATE owned_vehicles SET stored = 0 WHERE plate = @plate", {['@plate'] = args.plate})
+		end
+	end)
+end, true, {help = 'Spawn Owned Vehicle by Plate', arguments = {
+	{name = 'player', help = 'PlayerID', type = 'player'},
+	{name = 'plate', help = '"Plate"', type = 'string'}
+}})
+
 -- Console Commands
 RegisterCommand(Config.ConsoleCommand, function(source, args, rawCommand) -- _giveveh <playerID> <categorie> <carModel> <plate>
     if (source == 0) then
