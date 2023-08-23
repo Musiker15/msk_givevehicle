@@ -87,7 +87,7 @@ ESX.RegisterCommand(Config.Command3, Config.AdminGroups, function(xPlayer, args,
 	{name = 'type', help = 'Categorie', type = 'string'},
 	{name = 'vehicle', help = 'Vehiclename', type = 'string'},
 	{name = 'job', help = 'Job', type = 'string'},
-	{name = 'identifier', help = 'Identifier', type = 'string'},
+	{name = 'identifier', help = 'Identifier', type = 'number'},
 	{name = 'plate', help = '"Plate" (optional)', type = 'string'}
 }})
 
