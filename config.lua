@@ -1,37 +1,39 @@
 Config = {}
 ----------------------------------------------------------------
 Config.Locale = 'de'
-Config.VersionChecker = true
 Config.Debug = true
+Config.VersionChecker = true
 ----------------------------------------------------------------
 -- !!! This function is clientside AND serverside !!!
-Config.Notification = function(source, xPlayer, message) 
+Config.Notification = function(source, message, typ) 
     if IsDuplicityVersion() then -- serverside
-        xPlayer.showNotification(message)
+        MSK.Notification(source, 'GiveVehicle', message, typ, 5000)
     else -- clientside
-        ESX.ShowNotification(message)
+        MSK.Notification('GiveVehicle', message, typ, 5000)
     end
 end
 ----------------------------------------------------------------
 Config.AdminGroups = {'superadmin', 'admin'} -- You can set multiple groups
 
--- Ingame Commands
-Config.Command = 'giveveh' -- Read the Readme.md for Command Usage
-Config.Command2 = 'delveh' -- Read the Readme.md for Command Usage
-Config.Command3 = 'givejobveh' -- Read the Readme.md for Command Usage
-Config.Command4 = 'spawnveh' -- Read the Readme.md for Command Usage // You can use this at the console too
+Config.Commands = {
+    giveveh = 'giveveh', -- Read the Readme.md for Command Usage
+    delveh = 'delveh', -- Read the Readme.md for Command Usage
+    givejobveh = 'givejobveh', -- Read the Readme.md for Command Usage
+    spawnveh = 'spawnveh', -- Read the Readme.md for Command Usage // You can use this at the console too
+}
 
--- Console Commands
-Config.ConsoleCommand = '_giveveh' -- Read the Readme.md for Command Usage
-Config.ConsoleCommand2 = '_delveh' -- Read the Readme.md for Command Usage
-Config.ConsoleCommand3 = '_givejobveh' -- Read the Readme.md for Command Usage
+Config.ConsoleCommands = {
+    giveveh = '_giveveh',
+    delveh = '_delveh',
+    givejobveh = '_givejobveh',
+}
 ----------------------------------------------------------------
 Config.FuelSystem = function(vehicle, fuelLevel) -- Only for Command4: spawnveh
-    -- LegacyFuel
-    exports['LegacyFuel']:SetFuel(vehicle, fuelLevel)
-
-    -- FiveM Native
-    -- SetVehicleFuelLevel(vehicle, fuelLevel)
+    -- exports['LegacyFuel']:SetFuel(vehicle, fuel) -- LegacyFuel
+    -- exports['myFuel']:SetFuel(vehicle, fuel) -- myFuel
+    -- SetVehicleFuelLevel(vehicle, fuel + 0.0) -- FiveM Native
+    -- exports['qs-fuelstations']:SetFuel(vehicle, fuel) -- Quasar Fuelstations
+    Entity(vehicle).state.fuel = fuel -- ox_fuel
 end
 
 Config.Plate = {
