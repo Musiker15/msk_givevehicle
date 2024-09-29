@@ -7,7 +7,7 @@ end
 RegisterServerEvent('msk_givevehicle:setVehicle', function(item, props, vehicleType)
 	local src = source
 	local xPlayer = ESX.GetPlayerFromId(src)
-	local alreadyExists = MySQL.scalar.await('SELECT COUNT(plate) FROM owned_vehicles WHERE plate = ?', {MSK.Trim(plate, true)}) > 0
+	local alreadyExists = MySQL.scalar.await('SELECT COUNT(plate) FROM owned_vehicles WHERE plate = ?', {MSK.String.Trim(props.plate)}) > 0
 
 	if alreadyExists then
 		Config.Notification(src, Translation[Config.Locale]['item_already_exist'], 'error') -- Plate already exist
@@ -16,7 +16,7 @@ RegisterServerEvent('msk_givevehicle:setVehicle', function(item, props, vehicleT
 
 	MySQL.query('INSERT INTO owned_vehicles (owner, plate, vehicle, stored, type) VALUES (@owner, @plate, @vehicle, @stored, @type)', {
 		['@owner'] = xPlayer.identifier,
-		['@plate'] = props.plate,
+		['@plate'] = MSK.String.Trim(props.plate),
 		['@vehicle'] = json.encode(props),
 		['@stored'] = 1,
 		['type'] = vehicleType
