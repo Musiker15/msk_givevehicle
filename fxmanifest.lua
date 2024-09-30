@@ -4,7 +4,7 @@ games { 'gta5' }
 author 'Musiker15 - MSK Scripts'
 name 'msk_givevehicle'
 description 'Give or Delete Vehicles with Command or Item'
-version '2.0.0'
+version '2.0.1'
 
 shared_scripts {
 	'@es_extended/imports.lua',

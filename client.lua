@@ -4,6 +4,14 @@ RegisterNetEvent('msk_givevehicle:spawnVehicle', function(props)
 	ESX.Game.SpawnVehicle(props.model, GetEntityCoords(playerPed), GetEntityHeading(playerPed), function(vehicle)
 		ESX.Game.SetVehicleProperties(vehicle, props)
 		Config.FuelSystem(vehicle, props.fuelLevel)
+
+		if (GetResourceState("msk_vehiclekeys") == "started") then
+			local hasKey = exports.msk_vehiclekeys:HasPlayerKey(vehicle)
+
+			if not hasKey then
+				exports.msk_vehiclekeys:AddTempKey(vehicle)
+			end
+		end
 	end)
 end)
 

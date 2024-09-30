@@ -22,6 +22,10 @@ RegisterServerEvent('msk_givevehicle:setVehicle', function(item, props, vehicleT
 		['type'] = vehicleType
 	})
 
+	if (GetResourceState("msk_vehiclekeys") == "started") then
+		exports.msk_vehiclekeys:AddPrimaryKey({source = src}, MSK.String.Trim(props.plate))
+	end
+
 	xPlayer.removeInventoryItem(item, 1)
 	Config.Notification(src, Translation[Config.Locale]['item_success'], 'success')
 end)
@@ -192,6 +196,10 @@ RegisterServerEvent('msk_givevehicle:setVehicleCommand', function(xTarget, categ
 				['type'] = categorie,
 				['job'] = job
 			})
+
+			if (GetResourceState("msk_vehiclekeys") == "started") then
+				exports.msk_vehiclekeys:AddPrimaryKey({identifier = identifier}, MSK.String.Trim(plate))
+			end
 		else
 			MySQL.query('INSERT INTO owned_vehicles (owner, plate, vehicle, stored, type) VALUES (@owner, @plate, @vehicle, @stored, @type)', {
 				['@owner']   = xTarget.identifier,
@@ -200,6 +208,10 @@ RegisterServerEvent('msk_givevehicle:setVehicleCommand', function(xTarget, categ
 				['@stored']  = 1,
 				['type'] = categorie
 			})
+
+			if (GetResourceState("msk_vehiclekeys") == "started") then
+				exports.msk_vehiclekeys:AddPrimaryKey({identifier = xTarget.identifier}, MSK.String.Trim(plate))
+			end
 		end
 
 		logging('debug', Translation[Config.Locale]['vehicle_successfully_added']:format(model, plate, xTarget.source))
@@ -216,15 +228,6 @@ RegisterServerEvent('msk_givevehicle:setVehicleCommand', function(xTarget, categ
 		end
 	end
 end)
-
-function table.contains(items, item)
-	for k, v in pairs(items) do
-		if v.name == item then
-			return true
-		end
-	end
-	return false
-end
 
 logging = function(code, ...)
 	if not Config.Debug then return end
