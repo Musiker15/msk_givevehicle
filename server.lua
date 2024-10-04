@@ -23,7 +23,7 @@ RegisterServerEvent('msk_givevehicle:setVehicle', function(item, props, vehicleT
 	})
 
 	if (GetResourceState("msk_vehiclekeys") == "started") then
-		exports.msk_vehiclekeys:AddPrimaryKey({source = src}, MSK.String.Trim(props.plate))
+		exports.msk_vehiclekeys:AddPrimaryKey({source = src}, {plate = MSK.String.Trim(props.plate), model = props.model})
 	end
 
 	xPlayer.removeInventoryItem(item, 1)
@@ -198,7 +198,7 @@ RegisterServerEvent('msk_givevehicle:setVehicleCommand', function(xTarget, categ
 			})
 
 			if (GetResourceState("msk_vehiclekeys") == "started") then
-				exports.msk_vehiclekeys:AddPrimaryKey({identifier = identifier}, MSK.String.Trim(plate))
+				exports.msk_vehiclekeys:AddPrimaryKey({identifier = identifier}, {plate = MSK.String.Trim(plate), model = props.model})
 			end
 		else
 			MySQL.query('INSERT INTO owned_vehicles (owner, plate, vehicle, stored, type) VALUES (@owner, @plate, @vehicle, @stored, @type)', {
@@ -210,7 +210,7 @@ RegisterServerEvent('msk_givevehicle:setVehicleCommand', function(xTarget, categ
 			})
 
 			if (GetResourceState("msk_vehiclekeys") == "started") then
-				exports.msk_vehiclekeys:AddPrimaryKey({identifier = xTarget.identifier}, MSK.String.Trim(plate))
+				exports.msk_vehiclekeys:AddPrimaryKey({identifier = xTarget.identifier}, {plate = MSK.String.Trim(plate), model = props.model})
 			end
 		end
 
