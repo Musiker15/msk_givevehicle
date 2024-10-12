@@ -6,6 +6,8 @@ name 'msk_givevehicle'
 description 'Give or Delete Vehicles with Command or Item'
 version '2.0.2'
 
+lua54 'yes'
+
 shared_scripts {
 	'@es_extended/imports.lua',
 	'@msk_core/import.lua',
