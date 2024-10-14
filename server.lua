@@ -4,14 +4,21 @@ for item, vehData in pairs(Config.Vehicles) do
     end)
 end
 
+DoesVehicleWithPlateExist = function(plate)
+	local alreadyExists = MySQL.scalar.await('SELECT COUNT(plate) FROM owned_vehicles WHERE plate = @plate', {
+		['@plate'] = MSK.String.Trim(plate)
+	}) > 0
+
+	return alreadyExists
+end
+
 RegisterServerEvent('msk_givevehicle:setVehicle', function(item, props, vehicleType)
 	local src = source
 	local xPlayer = ESX.GetPlayerFromId(src)
-	local alreadyExists = MySQL.scalar.await('SELECT COUNT(plate) FROM owned_vehicles WHERE plate = ?', {MSK.String.Trim(props.plate)}) > 0
+	local alreadyExists = DoesVehicleWithPlateExist(props.plate)
 
 	if alreadyExists then
-		Config.Notification(src, Translation[Config.Locale]['item_already_exist'], 'error') -- Plate already exist
-		return
+		return Config.Notification(src, Translation[Config.Locale]['item_already_exist'], 'error') -- Plate already exist
 	end
 
 	MySQL.query('INSERT INTO owned_vehicles (owner, plate, vehicle, stored, type) VALUES (@owner, @plate, @vehicle, @stored, @type)', {
@@ -165,16 +172,15 @@ end)
 RegisterServerEvent('msk_givevehicle:setVehicleCommand', function(xTarget, categorie, model, plate, props, console, job, bool)
 	local src = source
 	local xPlayer = ESX.GetPlayerFromId(src)
-	local data = MySQL.query.await('SELECT * FROM owned_vehicles WHERE plate = @plate', { 
-		["@plate"] = plate
-	})
+	local alreadyExists = DoesVehicleWithPlateExist(plate)
 
 	if console then
 		xTarget = ESX.GetPlayerFromId(xTarget)
 	end
 
-	if data[1] then
+	if alreadyExists then
 		logging('debug', Translation[Config.Locale]['vehicle_already_exist']:format(plate))
+
 		if xPlayer and not console then
 			Config.Notification(src, Translation[Config.Locale]['vehicle_already_exist']:format(plate))
 		end

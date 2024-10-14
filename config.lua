@@ -28,12 +28,12 @@ Config.ConsoleCommands = {
     givejobveh = '_givejobveh',
 }
 ----------------------------------------------------------------
-Config.FuelSystem = function(vehicle, fuelLevel) -- Only for Command4: spawnveh
+Config.FuelSystem = function(vehicle, fuel) -- Only for Command4: spawnveh
     -- exports['LegacyFuel']:SetFuel(vehicle, fuel) -- LegacyFuel
     -- exports['myFuel']:SetFuel(vehicle, fuel) -- myFuel
     -- SetVehicleFuelLevel(vehicle, fuel + 0.0) -- FiveM Native
     -- exports['qs-fuelstations']:SetFuel(vehicle, fuel) -- Quasar Fuelstations
-    Entity(vehicle).state.fuel = fuel -- ox_fuel
+    Entity(vehicle).state.fuel = fuel -- ox_fuel and msk_fuel
 end
 
 Config.Plate = {
