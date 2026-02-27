@@ -42,7 +42,7 @@ end)
 ----------------------------------------------------------------
 ESX.RegisterCommand(Config.Commands.giveveh, Config.AdminGroups, function(xPlayer, args, showError) -- /giveveh <playerID> <categorie> <carModel> <plate>
 	TriggerClientEvent('msk_givevehicle:giveVehicleCommand', xPlayer.source, args.player, args.type, args.vehicle, args.plate)
-  end, false, {help = 'Give someone a Vehicle', arguments = {
+end, false, {help = 'Give someone a Vehicle', arguments = {
 	{name = 'player', help = 'PlayerID', type = 'player'},
 	{name = 'type', help = 'Categorie', type = 'string'},
 	{name = 'vehicle', help = 'Vehiclename', type = 'string'},
@@ -54,22 +54,27 @@ ESX.RegisterCommand(Config.Commands.delveh, Config.AdminGroups, function(xPlayer
 		MySQL.query('DELETE FROM owned_vehicles WHERE plate = @plate', {
 			['@plate'] = args.plate
 		}, function(result)
-			if result.affectedRows == 1 then
+            if result.affectedRows == 1 then
+
+                if (GetResourceState("msk_vehiclekeys") == "started") then
+					exports.msk_vehiclekeys:RemoveAllExistingKeys(MSK.String.Trim(args.plate))
+                end
+				
 				logging('debug', 'Deleted: ' .. args.plate)
-				Config.Notification(src, Translation[Config.Locale]['deleted']:format(args.plate))
+				Config.Notification(xPlayer.source, Translation[Config.Locale]['deleted']:format(args.plate))
 			else
 				logging('debug', 'Error while deleting: ' .. args.plate)
-				Config.Notification(src, Translation[Config.Locale]['delete_failed']:format(args.plate))
+				Config.Notification(xPlayer.source, Translation[Config.Locale]['delete_failed']:format(args.plate))
 			end
 		end)
 	end
-  end, false, {help = 'Delete a Vehicle from Database', arguments = {
+end, false, {help = 'Delete a Vehicle from Database', arguments = {
 	{name = 'plate', help = '"Plate"', type = 'string'}
 }})
 
 ESX.RegisterCommand(Config.Commands.givejobveh, Config.AdminGroups, function(xPlayer, args, showError) -- /givejobveh <playerID> <categorie> <carModel> <job> <bool> <plate>
 	TriggerClientEvent('msk_givevehicle:giveVehicleCommand', xPlayer.source, args.player, args.type, args.vehicle, args.plate, nil, args.job, args.identifier)
-  end, false, {help = 'Give someone a Vehicle', arguments = {
+end, false, {help = 'Give someone a Vehicle', arguments = {
 	{name = 'player', help = 'PlayerID', type = 'player'},
 	{name = 'type', help = 'Categorie', type = 'string'},
 	{name = 'vehicle', help = 'Vehiclename', type = 'string'},
