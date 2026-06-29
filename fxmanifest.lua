@@ -5,6 +5,7 @@ author 'Musiker15 - MSK Scripts'
 name 'msk_givevehicle'
 description 'Give, Spawn, Delete & Manage Vehicles via an in-game Admin Dashboard'
 version '3.0.0'
+license 'LGPL-3.0-or-later'
 
 lua54 'yes'
 
