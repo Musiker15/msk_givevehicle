@@ -1,0 +1,65 @@
+/* Local self-hosted fonts (no Google CDN). latin + latin-ext (EN/DE). */
+@import '@fontsource/open-sans/latin-400.css';
+@import '@fontsource/open-sans/latin-600.css';
+@import '@fontsource/open-sans/latin-700.css';
+@import '@fontsource/open-sans/latin-800.css';
+@import '@fontsource/open-sans/latin-ext-400.css';
+@import '@fontsource/open-sans/latin-ext-600.css';
+@import '@fontsource/open-sans/latin-ext-700.css';
+@import '@fontsource/work-sans/latin-600.css';
+@import '@fontsource/work-sans/latin-700.css';
+@import '@fontsource/work-sans/latin-ext-600.css';
+@import '@fontsource/work-sans/latin-ext-700.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Theme defaults (RGB triplets). Overridden at runtime by applyTheme() from the
+   DB-stored colours — see web/src/lib/theme.ts. Keep in sync with DEFAULT_THEME. */
+:root {
+  --c-accent-rgb: 0 230 118;
+  --c-accent-dim-rgb: 0 184 94;
+  --c-bg-rgb: 10 11 13;
+  --c-panel-rgb: 19 19 23;
+  --c-panel-raised-rgb: 33 33 37;
+  --c-text-primary-rgb: 240 237 232;
+  --c-text-secondary-rgb: 176 173 184;
+  --c-text-muted-rgb: 105 103 110;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: transparent;
+  user-select: none;
+}
+
+body {
+  font-family: 'Open Sans', sans-serif;
+  color: rgb(var(--c-text-primary-rgb));
+}
+
+.msk-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.msk-scroll::-webkit-scrollbar-track {
+  background: rgb(var(--c-text-primary-rgb) / 0.03);
+}
+.msk-scroll::-webkit-scrollbar-thumb {
+  background: rgb(var(--c-accent-rgb) / 0.4);
+  border-radius: 3px;
+}
+
+@layer components {
+  .msk-label {
+    @apply font-mono uppercase tracking-[0.12em] text-text-muted;
+  }
+  .msk-panel {
+    @apply bg-panel border border-border rounded-lg shadow-panel;
+  }
+}

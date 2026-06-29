@@ -1,11 +1,17 @@
 Config = {}
 ----------------------------------------------------------------
+-- These values are the INITIAL SEED. From the first start on, the admin
+-- dashboard owns them: they are written to the DB (msk_givevehicle_settings)
+-- and become live-editable. Changing them here after the first start has no
+-- effect unless you wipe the `__seeded__` row. Code hooks (Config.Notification,
+-- Config.CustomFuelSystem) are NOT DB-managed and stay configurable here.
+----------------------------------------------------------------
 Config.Locale = 'de'
 Config.Debug = true
 Config.VersionChecker = true
 ----------------------------------------------------------------
--- !!! This function is clientside AND serverside !!!
-Config.Notification = function(source, message, typ) 
+-- !!! This function is clientside AND serverside !!!  (code hook, not DB-managed)
+Config.Notification = function(source, message, typ)
     if IsDuplicityVersion() then -- serverside
         MSK.Notification(source, 'GiveVehicle', message, typ, 5000)
     else -- clientside
@@ -13,37 +19,58 @@ Config.Notification = function(source, message, typ)
     end
 end
 ----------------------------------------------------------------
-Config.AdminGroups = {'superadmin', 'admin'} -- You can set multiple groups
+-- The in-game dashboard is opened with this command. DB-managed: editable in the
+-- Settings tab. Access is gated by Config.dashboardGroups + the permission system
+-- (group.admin always; group.user never) — NOT by this command being ACE-locked.
+Config.adminCommand = 'givevehadmin'
 
-Config.Commands = {
-    giveveh = 'giveveh', -- Read the Readme.md for Command Usage
-    delveh = 'delveh', -- Read the Readme.md for Command Usage
-    givejobveh = 'givejobveh', -- Read the Readme.md for Command Usage
-    spawnveh = 'spawnveh', -- Read the Readme.md for Command Usage // You can use this at the console too
-}
-
-Config.ConsoleCommands = {
-    giveveh = '_giveveh',
-    delveh = '_delveh',
-    givejobveh = '_givejobveh',
-}
+-- Groups (besides the always-allowed group.admin) that may open the dashboard.
+-- Permission-managed: edit in the Permissions tab. group.user is hard-blocked.
+Config.dashboardGroups = { 'mod' }
 ----------------------------------------------------------------
-Config.FuelSystem = function(vehicle, fuel) -- Only for Command4: spawnveh
-    -- exports['LegacyFuel']:SetFuel(vehicle, fuel) -- LegacyFuel
-    -- exports['myFuel']:SetFuel(vehicle, fuel) -- myFuel
-    -- SetVehicleFuelLevel(vehicle, fuel + 0.0) -- FiveM Native
-    -- exports['qs-fuelstations']:SetFuel(vehicle, fuel) -- Quasar Fuelstations
-    Entity(vehicle).state.fuel = fuel -- ox_fuel and msk_fuel
+-- Fuel system selector (DB-managed). One of:
+--   'statebag'        -> Entity(vehicle).state.fuel  (ox_fuel & msk_fuel)
+--   'LegacyFuel'      -> exports['LegacyFuel']:SetFuel
+--   'ox_fuel'         -> Entity(vehicle).state.fuel
+--   'qs-fuelstations' -> exports['qs-fuelstations']:SetFuel
+--   'native'          -> SetVehicleFuelLevel
+--   'custom'          -> calls Config.CustomFuelSystem below
+Config.FuelSystem = 'statebag'
+
+-- Only used when Config.FuelSystem == 'custom' (code hook, not DB-managed).
+Config.CustomFuelSystem = function(vehicle, fuel)
+    -- exports['myFuel']:SetFuel(vehicle, fuel)
+    Entity(vehicle).state.fuel = fuel
 end
 
 Config.Plate = {
     format = 'XXX XXX', -- 'XXX XXX' or 'XX XXXX'
-    
+
     enablePrefix = true, -- Set to false if you want Random Letters
     prefix = 'PX' -- Only if format = 'XX XXXX' // Looks like 'PX 1234'
 }
 ----------------------------------------------------------------
--- You can give Player an Item and they can use the Item to get a Vehicle
+-- Vehicle-key integration (DB-managed). When `enable` is on, keys are
+-- automatically GIVEN to the player on give/spawn and REMOVED on delete, using
+-- the selected (and started) key script. Auto-detected at runtime via
+-- GetResourceState — if `script` isn't started, key ops are skipped silently.
+Config.VehicleKeys = {
+    enable = true,
+    script = 'msk_vehiclekeys', -- 'msk_vehiclekeys' | 'VehicleKeyChain' | 'vehicles_keys'
+}
+----------------------------------------------------------------
+-- Server-console commands stay available (the in-game slash commands were
+-- replaced by the dashboard). These are the console command names.
+Config.ConsoleCommands = {
+    giveveh = '_giveveh',
+    delveh = '_delveh',
+    givejobveh = '_givejobveh',
+    spawnveh = 'spawnveh', -- usable in the server console
+}
+----------------------------------------------------------------
+-- Item vehicles (SEED for the dashboard's "Item Vehicles" tab). After the first
+-- start these live in msk_givevehicle_items and are managed via the dashboard.
+-- Players can use the item to get the vehicle delivered to a garage.
 Config.Vehicles = {
     ["zentorno"] = { -- Item Name
         label = 'Zentorno',

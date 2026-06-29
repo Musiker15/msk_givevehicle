@@ -30,12 +30,12 @@ local CheckVersionCallback = function(status, response, header)
 
     local latestVersion = response
     local currentVersion = GetResourceMetadata(GetCurrentResourceName(), "version")
-    
-    if currentVersion == latestVersion then 
+
+    if currentVersion == latestVersion then
         if Config.VersionChecker then
             print(UP_TO_DATE:format(currentVersion))
         end
-        return 
+        return
     end
 
     local current = MSK.String.Split(currentVersion, '.')
