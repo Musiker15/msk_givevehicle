@@ -42,5 +42,5 @@ AddEventHandler('onResourceStart', function(resource)
     -- Push freshly loaded settings to anyone already connected (live restart).
     AdminApi.Broadcast()
 
-    print(('^2[msk_givevehicle]^0 Admin dashboard ready — command: ^5/%s^0'):format(Config.adminCommand or 'givevehadmin'))
+    print(('^2[msk_givevehicle]^0 Admin dashboard ready — command: ^5/%s^0'):format(Config.adminCommand or 'adgiveveh'))
 end)

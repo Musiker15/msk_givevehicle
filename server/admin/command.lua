@@ -4,7 +4,7 @@ AdminCommand.registered = {}
 -- The command itself is NOT ACE-restricted; access control lives in the callback
 -- (AdminPerms.CanOpen) so it respects dashboardGroups + the group.user blacklist.
 function AdminCommand.Register(name)
-    name = name or Config.adminCommand or 'givevehadmin'
+    name = name or Config.adminCommand or 'adgiveveh'
     if AdminCommand.registered[name] then return end
     AdminCommand.registered[name] = true
 

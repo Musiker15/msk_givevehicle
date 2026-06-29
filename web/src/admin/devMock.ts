@@ -24,7 +24,7 @@ const state: AdminBootstrap = {
     FuelSystem: 'statebag',
     Plate: { format: 'XXX XXX', enablePrefix: true, prefix: 'PX' },
     VehicleKeys: { enable: true, script: 'msk_vehiclekeys' },
-    adminCommand: 'givevehadmin',
+    adminCommand: 'adgiveveh',
     Theme: { ...DEFAULT_THEME },
     BrandTag: 'MSK',
     dashboardGroups: ['mod'],

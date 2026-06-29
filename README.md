@@ -8,7 +8,7 @@ happens in the dashboard. The server-console commands stay available.
 "move to garage") only appear when `msk_garage` is started.
 
 ## Admin Dashboard ##
-Open it in-game with the configurable command (default `/givevehadmin`).
+Open it in-game with the configurable command (default `/adgiveveh`).
 
 Access is gated by the permission system:
 * `group.admin` always has every right.
