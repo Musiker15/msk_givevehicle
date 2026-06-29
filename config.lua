@@ -1,11 +1,5 @@
 Config = {}
 ----------------------------------------------------------------
--- These values are the INITIAL SEED. From the first start on, the admin
--- dashboard owns them: they are written to the DB (msk_givevehicle_settings)
--- and become live-editable. Changing them here after the first start has no
--- effect unless you wipe the `__seeded__` row. Code hooks (Config.Notification,
--- Config.CustomFuelSystem) are NOT DB-managed and stay configurable here.
-----------------------------------------------------------------
 Config.Locale = 'de'
 Config.Debug = true
 Config.VersionChecker = true
@@ -22,7 +16,7 @@ end
 -- The in-game dashboard is opened with this command. DB-managed: editable in the
 -- Settings tab. Access is gated by Config.dashboardGroups + the permission system
 -- (group.admin always; group.user never) — NOT by this command being ACE-locked.
-Config.adminCommand = 'givevehadmin'
+Config.adminCommand = 'adgiveveh'
 
 -- Groups (besides the always-allowed group.admin) that may open the dashboard.
 -- Permission-managed: edit in the Permissions tab. group.user is hard-blocked.
