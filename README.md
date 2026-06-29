@@ -1,4 +1,4 @@
-# msk_givevehicle
+# MSK GiveVehicle
 
 Give, spawn, delete & manage vehicles through an **in-game admin dashboard**
 (React NUI, MSK design). Everything that used to be an in-game slash command now
@@ -66,7 +66,7 @@ ALTER TABLE `owned_vehicles` ADD INDEX `idx_owner` (`owner`);
 ```
 
 ## Requirements ##
-* [ESX 1.2 and above](https://github.com/esx-framework/esx_core)
+* [ESX Legacy](https://github.com/esx-framework/esx_core)
 * [oxmysql](https://github.com/overextended/oxmysql)
 * [msk_core](https://github.com/Musiker15)
 * Optional: a vehicle-key script (`msk_vehiclekeys` / `VehicleKeyChain` / `vehicles_keys`)
