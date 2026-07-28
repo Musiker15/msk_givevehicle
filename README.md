@@ -1,4 +1,4 @@
-# MSK GiveVehicle
+![MSK GiveVehicle](.assets/msk_givevehicle-banner.png)
 
 Give, spawn, delete & manage vehicles through an **in-game admin dashboard**
 (React NUI, MSK design). Everything that used to be an in-game slash command now
