@@ -60,6 +60,7 @@ Config.ConsoleCommands = {
     delveh = '_delveh',
     givejobveh = '_givejobveh',
     spawnveh = 'spawnveh', -- usable in the server console
+    setvehowner = '_setvehowner', -- switch a vehicle between player- and society-owned
 }
 ----------------------------------------------------------------
 -- Item vehicles (SEED for the dashboard's "Item Vehicles" tab). After the first

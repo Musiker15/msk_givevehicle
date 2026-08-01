@@ -67,6 +67,16 @@ export interface AdminStrings {
   moved: string
   deleted: string
   ownerless: string
+  // ownership
+  change_owner: string
+  change_owner_title: string
+  change_owner_hint: string
+  current_owner: string
+  owner_type: string
+  owner_identifier: string
+  owner_identifier_hint: string
+  owner_job_none: string
+  owner_changed: string
   // items
   create_item: string
   add_item: string
@@ -132,6 +142,7 @@ export interface AdminStrings {
   perm_spawn: string
   perm_delete: string
   perm_move: string
+  perm_owner: string
   perm_browse: string
   perm_items: string
   perm_settings: string
@@ -202,6 +213,15 @@ const en: AdminStrings = {
   moved: 'Vehicle moved.',
   deleted: 'Vehicle deleted.',
   ownerless: '(no owner)',
+  change_owner: 'Change owner',
+  change_owner_title: 'Ownership',
+  change_owner_hint: 'Society vehicles belong to the job instead of a player. Every member of the job can use them.',
+  current_owner: 'Current',
+  owner_type: 'Owned by',
+  owner_identifier: 'Identifier (offline)',
+  owner_identifier_hint: 'Only used when no online player is selected.',
+  owner_job_none: '— no job —',
+  owner_changed: 'Owner changed.',
   create_item: 'Create item vehicle',
   add_item: 'Add item',
   item_id: 'Item name',
@@ -262,6 +282,7 @@ const en: AdminStrings = {
   perm_spawn: 'Spawn vehicle',
   perm_delete: 'Delete vehicle',
   perm_move: 'Move garage',
+  perm_owner: 'Change owner',
   perm_browse: 'Browse vehicles',
   perm_items: 'Manage items',
   perm_settings: 'Manage settings',
@@ -332,6 +353,15 @@ const de: AdminStrings = {
   moved: 'Fahrzeug verschoben.',
   deleted: 'Fahrzeug gelöscht.',
   ownerless: '(kein Besitzer)',
+  change_owner: 'Besitzer ändern',
+  change_owner_title: 'Besitzverhältnis',
+  change_owner_hint: 'Society-Fahrzeuge gehören dem Job statt einem Spieler. Jeder Mitarbeiter des Jobs kann sie nutzen.',
+  current_owner: 'Aktuell',
+  owner_type: 'Gehört',
+  owner_identifier: 'Identifier (offline)',
+  owner_identifier_hint: 'Wird nur genutzt, wenn kein Online-Spieler gewählt ist.',
+  owner_job_none: '— kein Job —',
+  owner_changed: 'Besitzer geändert.',
   create_item: 'Item-Fahrzeug erstellen',
   add_item: 'Item hinzufügen',
   item_id: 'Item-Name',
@@ -392,6 +422,7 @@ const de: AdminStrings = {
   perm_spawn: 'Fahrzeug spawnen',
   perm_delete: 'Fahrzeug löschen',
   perm_move: 'Garage wechseln',
+  perm_owner: 'Besitzer ändern',
   perm_browse: 'Fahrzeuge durchsuchen',
   perm_items: 'Items verwalten',
   perm_settings: 'Einstellungen verwalten',
@@ -410,6 +441,7 @@ const PERM_LABELS: Record<string, keyof AdminStrings> = {
   'vehicle.spawn': 'perm_spawn',
   'vehicle.delete': 'perm_delete',
   'vehicle.move': 'perm_move',
+  'vehicle.owner': 'perm_owner',
   'vehicle.browse': 'perm_browse',
   'items.manage': 'perm_items',
   'settings.manage': 'perm_settings',

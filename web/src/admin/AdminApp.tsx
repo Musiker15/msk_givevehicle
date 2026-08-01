@@ -45,7 +45,7 @@ export function AdminApp({ data, onClose }: { data: AdminBootstrap; onClose: () 
     const list: { id: TabId; label: string }[] = []
     if (p['vehicle.give']) list.push({ id: 'give', label: t.tab_give })
     if (p['vehicle.givejob']) list.push({ id: 'givejob', label: t.tab_givejob })
-    if (p['vehicle.browse'] || p['vehicle.spawn'] || p['vehicle.delete'] || p['vehicle.move'])
+    if (p['vehicle.browse'] || p['vehicle.spawn'] || p['vehicle.delete'] || p['vehicle.move'] || p['vehicle.owner'])
       list.push({ id: 'vehicles', label: t.tab_vehicles })
     if (p['items.manage']) list.push({ id: 'items', label: t.tab_items })
     if (p['settings.manage']) list.push({ id: 'settings', label: t.tab_settings })

@@ -4,10 +4,11 @@ AdminPerms = AdminPerms or {}
 -- Permission keys. Order matters: the NUI renders the matrix in this order and
 -- decides which tabs are visible from these.
 --   vehicle.move is only meaningful when msk_garage is running.
+--   vehicle.owner switches an existing vehicle between player- and society-owned.
 ----------------------------------------------------------------
 AdminPerms.PERMS = {
     'vehicle.give', 'vehicle.givejob', 'vehicle.spawn', 'vehicle.delete',
-    'vehicle.move', 'vehicle.browse',
+    'vehicle.move', 'vehicle.owner', 'vehicle.browse',
     'items.manage', 'settings.manage', 'permissions.manage',
 }
 

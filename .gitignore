@@ -45,5 +45,7 @@ graphify-out/*
 !graphify-out/GRAPH_REPORT.md
 
 # Other files
+.claude/
+CLAUDE.md
 CFX_POST.md
 DISCORD_UPDATE.md

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { ChevronLeft, ChevronRight, MapPin, Play, RotateCw, Trash2 } from 'lucide-react'
+import { Building2, ChevronLeft, ChevronRight, MapPin, Play, RotateCw, Trash2 } from 'lucide-react'
 import { fetchNui } from '../lib/nui'
 import { fmt, type AdminStrings } from './i18n'
 import type { AdminBootstrap, BrowseResult, BrowseRow } from './types'
@@ -33,6 +33,13 @@ export function VehiclesTab({
   const [movePlate, setMovePlate] = useState<string | null>(null)
   const [moveGarage, setMoveGarage] = useState('')
   const [deletePlate, setDeletePlate] = useState<string | null>(null)
+
+  // Ownership dialog (player-owned <-> society/job-owned).
+  const [ownerRow, setOwnerRow] = useState<BrowseRow | null>(null)
+  const [ownerMode, setOwnerMode] = useState<'player' | 'job'>('player')
+  const [ownerJob, setOwnerJob] = useState('')
+  const [ownerTarget, setOwnerTarget] = useState<number | null>(null)
+  const [ownerIdent, setOwnerIdent] = useState('')
 
   const p = d.perms
   const canMove = d.mskGarageRunning && p['vehicle.move']
@@ -80,6 +87,41 @@ export function VehiclesTab({
     } else notify(errText(t, res?.err), false)
   }
 
+  // A row is society owned when the owner column holds the job name itself.
+  const isSociety = (r: BrowseRow) => !!r.job && r.owner === r.job
+
+  const openOwner = (r: BrowseRow) => {
+    const society = isSociety(r)
+    setOwnerRow(r)
+    setOwnerMode(society ? 'job' : 'player')
+    setOwnerJob(r.job ?? '')
+    setOwnerTarget(d.onlinePlayers.find((pl) => pl.identifier === r.owner)?.id ?? null)
+    setOwnerIdent(society ? '' : r.owner ?? '')
+  }
+
+  const closeOwner = () => {
+    setOwnerRow(null)
+    setOwnerTarget(null)
+    setOwnerIdent('')
+    setOwnerJob('')
+  }
+
+  const doOwner = async () => {
+    if (!ownerRow) return
+    const res = await call('admin:vehicle:owner', {
+      plate: ownerRow.plate,
+      mode: ownerMode,
+      job: ownerJob || undefined,
+      target: ownerMode === 'player' ? ownerTarget ?? undefined : undefined,
+      identifier: ownerMode === 'player' ? ownerIdent.trim() || undefined : undefined,
+    })
+    if (res?.ok) {
+      notify(t.owner_changed, true)
+      closeOwner()
+      load()
+    } else notify(errText(t, res?.err), false)
+  }
+
   const doDelete = async (plate: string) => {
     const res = await call('admin:vehicle:delete', { plate })
     if (res?.ok) {
@@ -102,6 +144,10 @@ export function VehiclesTab({
   const moveOptions = [
     { value: '', label: `— ${t.garage} —` },
     ...d.garages.map((g) => ({ value: g.id, label: `${g.id} — ${g.label}` })),
+  ]
+  const ownerJobOptions = [
+    { value: '', label: ownerMode === 'job' ? `— ${t.select_job} —` : t.owner_job_none },
+    ...d.jobsList.map((j) => ({ value: j.name, label: `${j.label} (${j.name})` })),
   ]
 
   const rows: BrowseRow[] = result?.rows ?? []
@@ -154,7 +200,13 @@ export function VehiclesTab({
               <tr key={r.plate} className="border-t border-border hover:bg-white/[0.02]">
                 <td className="px-3 py-2 font-mono text-[12px] text-text-primary">{r.plate}</td>
                 <td className="px-3 py-2 font-sans text-[12px] text-text-secondary">
-                  {r.ownerName || r.owner || t.ownerless}
+                  {isSociety(r) ? (
+                    <span className="rounded-sm bg-accent/15 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em] text-accent">
+                      {t.owner_job}
+                    </span>
+                  ) : (
+                    r.ownerName || r.owner || t.ownerless
+                  )}
                   {r.job ? <span className="ml-1 text-text-muted">· {r.job}</span> : null}
                 </td>
                 <td className="px-3 py-2 font-sans text-[12px] text-text-muted">{r.type || '—'}</td>
@@ -178,6 +230,14 @@ export function VehiclesTab({
                       <button onClick={() => { setMovePlate(r.plate); setMoveGarage('') }} title={t.move}
                         className="rounded-sm border border-border p-1.5 text-text-secondary hover:text-accent">
                         <MapPin size={13} />
+                      </button>
+                    )}
+                    {p['vehicle.owner'] && (
+                      <button onClick={() => openOwner(r)} title={t.change_owner}
+                        className={`rounded-sm border border-border p-1.5 hover:text-accent ${
+                          isSociety(r) ? 'text-accent' : 'text-text-secondary'
+                        }`}>
+                        <Building2 size={13} />
                       </button>
                     )}
                     {p['vehicle.delete'] && (
@@ -258,6 +318,69 @@ export function VehiclesTab({
           <Field label={t.garage}>
             <Select value={moveGarage} onChange={setMoveGarage} options={moveOptions} />
           </Field>
+        </Modal>
+      )}
+
+      {/* Ownership modal */}
+      {ownerRow && (
+        <Modal
+          title={`${t.change_owner_title} — ${ownerRow.plate}`}
+          onClose={closeOwner}
+          footer={
+            <>
+              <Btn variant="ghost" onClick={closeOwner}>{t.cancel}</Btn>
+              <Btn
+                variant="accent"
+                onClick={doOwner}
+                disabled={ownerMode === 'job' ? !ownerJob : ownerTarget == null && !ownerIdent.trim()}
+              >
+                {t.save}
+              </Btn>
+            </>
+          }
+        >
+          <div className="flex flex-col gap-3">
+            <p className="font-sans text-[12px] text-text-muted">{t.change_owner_hint}</p>
+
+            <div className="rounded-sm border border-border bg-input px-3 py-2 font-sans text-[12px] text-text-secondary">
+              <span className="msk-label mr-2 text-[10px] font-bold">{t.current_owner}</span>
+              {isSociety(ownerRow) ? t.owner_job : ownerRow.ownerName || ownerRow.owner || t.ownerless}
+              <span className="ml-1 font-mono text-[11px] text-text-muted">
+                {ownerRow.owner}{ownerRow.job ? ` · ${ownerRow.job}` : ''}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Field label={t.owner_type}>
+                <Select
+                  value={ownerMode}
+                  onChange={(v) => setOwnerMode(v as 'player' | 'job')}
+                  options={[
+                    { value: 'player', label: t.owner_player },
+                    { value: 'job', label: t.owner_job },
+                  ]}
+                />
+              </Field>
+              <Field label={t.job}>
+                <Select value={ownerJob} onChange={setOwnerJob} options={ownerJobOptions} />
+              </Field>
+            </div>
+
+            {ownerMode === 'player' && (
+              <>
+                <PlayerPicker t={t} players={d.onlinePlayers} value={ownerTarget} onChange={setOwnerTarget} />
+                <Field label={t.owner_identifier}>
+                  <TextInput
+                    value={ownerIdent}
+                    onChange={setOwnerIdent}
+                    disabled={ownerTarget != null}
+                    placeholder="char1:xxxxxxxx"
+                  />
+                </Field>
+                <p className="font-sans text-[12px] text-text-muted">{t.owner_identifier_hint}</p>
+              </>
+            )}
+          </div>
         </Modal>
       )}
 

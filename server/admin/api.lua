@@ -281,6 +281,46 @@ MSK.Register('msk_givevehicle:admin:vehicle:move', function(src, data)
     return Core.Move({ plate = plate, garage = str(data.garage, 60) })
 end)
 
+-- Switch an existing vehicle between player-owned and society/job-owned.
+MSK.Register('msk_givevehicle:admin:vehicle:owner', function(src, data)
+    if not AdminPerms.Has(src, 'vehicle.owner') then return fail('no_permission') end
+    if type(data) ~= 'table' then return fail('bad_input') end
+    local plate = str(data.plate, 16)
+    if not plate or #plate == 0 then return fail('bad_plate') end
+
+    local mode = (data.mode == 'job') and 'job' or 'player'
+
+    -- Job must be a real ESX job (society owned rows are looked up by that name).
+    local job = str(data.job, 50)
+    if job and #job > 0 then
+        local jobs = (ESX and ESX.GetJobs) and ESX.GetJobs() or {}
+        if not jobs[job] then return fail('bad_job') end
+    else
+        job = nil
+    end
+    if mode == 'job' and not job then return fail('bad_job') end
+
+    -- Player mode: prefer the online target (authoritative identifier), fall back
+    -- to a manually typed identifier so offline owners can be set as well.
+    local identifier
+    if mode == 'player' then
+        local target = tonumber(data.target)
+        if target then
+            local xTarget = ESX.GetPlayerFromId(target)
+            if not xTarget then return fail('no_target') end
+            identifier = xTarget.identifier
+        else
+            identifier = str(data.identifier, 60)
+            identifier = identifier and MSK.String.Trim(identifier) or nil
+            if not identifier or #identifier == 0 or not identifier:match('^[%w_:%.%-]+$') then
+                return fail('no_target')
+            end
+        end
+    end
+
+    return Core.SetOwner({ plate = plate, mode = mode, job = job, identifier = identifier })
+end)
+
 MSK.Register('msk_givevehicle:admin:vehicle:browse', function(src, data)
     if not AdminPerms.Has(src, 'vehicle.browse') then return fail('no_permission') end
     data = type(data) == 'table' and data or {}

@@ -339,6 +339,71 @@ function Core.Move(opts)
 end
 
 ----------------------------------------------------------------
+-- Change the ownership of an existing owned vehicle.
+--   mode 'job'    -> society owned: owner becomes the job name (ESX reads such
+--                    rows as society/job vehicles), job column is set as well.
+--   mode 'player' -> owner becomes a player identifier; the job column can be
+--                    kept, changed or cleared (pass job = nil to clear it).
+-- opts: plate, mode, job?, identifier?
+----------------------------------------------------------------
+function Core.SetOwner(opts)
+    local trimmed, padded = plateForms(opts.plate)
+    local row = MySQL.single.await(
+        'SELECT `owner`, `vehicle`, `job` FROM owned_vehicles WHERE plate = ? OR plate = ? LIMIT 1',
+        { trimmed, padded }
+    )
+    if not row then return { ok = false, err = 'not_found' } end
+
+    local mode = (opts.mode == 'job') and 'job' or 'player'
+    local job = nil
+    if type(opts.job) == 'string' then
+        local j = MSK.String.Trim(opts.job)
+        if #j > 0 then job = j end
+    end
+
+    local owner
+    if mode == 'job' then
+        -- Society owned: the job IS the owner.
+        if not job then return { ok = false, err = 'bad_job' } end
+        owner = job
+    else
+        owner = type(opts.identifier) == 'string' and MSK.String.Trim(opts.identifier) or ''
+        if #owner == 0 then return { ok = false, err = 'no_target' } end
+    end
+
+    -- Nothing to do (keeps the key handling below from firing needlessly).
+    if owner == row.owner and job == row.job then
+        return { ok = true, owner = owner, job = job, mode = mode }
+    end
+
+    -- job is written as a real NULL when cleared, so ESX/msk_garage stop treating
+    -- the row as a job vehicle. Separate statements because a nil in the params
+    -- table would collapse the parameter list.
+    if job then
+        MySQL.update.await(
+            'UPDATE owned_vehicles SET owner = ?, job = ? WHERE plate = ? OR plate = ?',
+            { owner, job, trimmed, padded }
+        )
+    else
+        MySQL.update.await(
+            'UPDATE owned_vehicles SET owner = ?, job = NULL WHERE plate = ? OR plate = ?',
+            { owner, trimmed, padded }
+        )
+    end
+
+    -- Keys follow the owner: drop every key for the plate, then hand one to the
+    -- new owner (identifier or job name, mirroring what Core.Give does).
+    if Config.VehicleKeys and Config.VehicleKeys.enable then
+        Keys.RemoveKey(trimmed)
+        local okd, props = pcall(json.decode, row.vehicle or '{}')
+        Keys.GiveKey({ identifier = owner }, trimmed, (okd and type(props) == 'table') and props.model or nil)
+    end
+
+    logging('debug', Translation[Config.Locale]['owner_changed']:format(trimmed, tostring(row.owner), owner))
+    return { ok = true, owner = owner, job = job, mode = mode }
+end
+
+----------------------------------------------------------------
 -- Paginated, server-side filtered browse over owned_vehicles. Designed for
 -- large tables (3000+ rows): owner/plate filters run in SQL, the page is small,
 -- and the model filter matches the stored model hash so it stays a single scan.

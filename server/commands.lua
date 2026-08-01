@@ -65,6 +65,31 @@ RegisterCommand(Config.ConsoleCommands.givejobveh, function(source, args)
     else print(('%s ^1Give failed:^0 %s'):format(NAME, res.err)) end
 end)
 
+-- _setvehowner <mode: job|player> <job|identifier> <plate>
+-- Fallback name keeps older config.lua files (without the key) working.
+RegisterCommand(Config.ConsoleCommands.setvehowner or '_setvehowner', function(source, args)
+    if source ~= 0 then return end
+    local name = Config.ConsoleCommands.setvehowner or '_setvehowner'
+    if not (args[1] and args[2] and args[3]) then
+        print('^1SYNTAX ERROR: ^5' .. name .. ' <job|player> <jobName|identifier> <plate>^0')
+        return
+    end
+    local mode = string.lower(args[1])
+    if mode ~= 'job' and mode ~= 'player' then
+        print('^1SYNTAX ERROR: ^5' .. name .. ' <job|player> <jobName|identifier> <plate>^0')
+        return
+    end
+    local plate = joinPlate(args, 3)
+    local res = Core.SetOwner({
+        plate = plate,
+        mode = mode,
+        job = (mode == 'job') and args[2] or nil,
+        identifier = (mode == 'player') and args[2] or nil,
+    })
+    if res.ok then print(('%s Owner of ^5%s^0 is now ^5%s^0.'):format(NAME, plate, res.owner))
+    else print(('%s ^1Owner change failed:^0 %s'):format(NAME, res.err)) end
+end)
+
 -- spawnveh <playerID> <plate>
 RegisterCommand(Config.ConsoleCommands.spawnveh, function(source, args)
     if source ~= 0 then return end

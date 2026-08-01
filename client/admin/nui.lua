@@ -22,6 +22,7 @@ RegisterNUICallback('admin:vehicle:givejob', forward('msk_givevehicle:admin:vehi
 RegisterNUICallback('admin:vehicle:spawn', forward('msk_givevehicle:admin:vehicle:spawn'))
 RegisterNUICallback('admin:vehicle:delete', forward('msk_givevehicle:admin:vehicle:delete'))
 RegisterNUICallback('admin:vehicle:move', forward('msk_givevehicle:admin:vehicle:move'))
+RegisterNUICallback('admin:vehicle:owner', forward('msk_givevehicle:admin:vehicle:owner'))
 RegisterNUICallback('admin:vehicle:browse', forward('msk_givevehicle:admin:vehicle:browse'))
 
 -- Item vehicles

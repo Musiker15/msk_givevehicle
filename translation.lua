@@ -8,6 +8,7 @@ Translation = {
         ['vehicle_already_exist'] = 'Das Fahrzeug mit dem Kennzeichen ~y~%s~s~ existiert bereits.',
         ['vehicle_successfully_added'] = 'Das Fahrzeug ~y~%s~s~ mit dem Kennzeichen ~y~%s~s~ wurde an ID ~y~%s~s~ geliefert.',
         ['got_vehicle'] = 'Du hast das Fahrzeug ~y~%s~s~ mit dem Kennzeichen ~y~%s~s~ erhalten.',
+        ['owner_changed'] = 'Besitzer von ~y~%s~s~ geändert: ~y~%s~s~ -> ~y~%s~s~',
     },
     ['en'] = {
         ['clientCommand'] = 'The vehicle ~y~%s~s~ does not exist.',
@@ -18,5 +19,6 @@ Translation = {
         ['vehicle_already_exist'] = 'The vehicle with the license plate ~y~%s~s~ does already exist.',
         ['vehicle_successfully_added'] = 'The vehicle ~y~%s~s~ with the license plate ~y~%s~s~ was delivered to ID ~y~%s~s~.',
         ['got_vehicle'] = 'You received the vehicle ~y~%s~s~ with the license plate ~y~%s~s~.',
+        ['owner_changed'] = 'Owner of ~y~%s~s~ changed: ~y~%s~s~ -> ~y~%s~s~',
     },
 }

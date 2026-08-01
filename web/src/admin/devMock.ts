@@ -5,7 +5,7 @@ import type { AdminBootstrap, BrowseResult, BrowseRow } from './types'
 
 const ALL_PERMS = {
   'vehicle.give': true, 'vehicle.givejob': true, 'vehicle.spawn': true, 'vehicle.delete': true,
-  'vehicle.move': true, 'vehicle.browse': true, 'items.manage': true, 'settings.manage': true,
+  'vehicle.move': true, 'vehicle.owner': true, 'vehicle.browse': true, 'items.manage': true, 'settings.manage': true,
   'permissions.manage': true,
 }
 
@@ -66,15 +66,19 @@ const snapshot = (): AdminBootstrap => JSON.parse(JSON.stringify(state))
 
 // A fake owned_vehicles table for the browser.
 const OWNER_NAMES = ['John Carter', 'Emma Wilson', 'Liam Brooks', 'Olivia Hayes']
-const MOCK_ROWS: BrowseRow[] = Array.from({ length: 137 }, (_, i) => ({
-  plate: `MSK ${String(100 + i)}`,
-  owner: `char1:${(1000 + i).toString(16)}`,
-  ownerName: OWNER_NAMES[i % OWNER_NAMES.length],
-  type: ['car', 'boat', 'helicopter', 'bike'][i % 4],
-  stored: i % 3 === 0 ? 0 : 1,
-  garage: ['legion', 'marina', 'airport'][i % 3],
-  job: i % 5 === 0 ? 'police' : undefined,
-}))
+const MOCK_ROWS: BrowseRow[] = Array.from({ length: 137 }, (_, i) => {
+  const job = i % 5 === 0 ? 'police' : undefined
+  const society = job && i % 10 === 0 // a few rows are society owned
+  return {
+    plate: `MSK ${String(100 + i)}`,
+    owner: society ? job : `char1:${(1000 + i).toString(16)}`,
+    ownerName: society ? undefined : OWNER_NAMES[i % OWNER_NAMES.length],
+    type: ['car', 'boat', 'helicopter', 'bike'][i % 4],
+    stored: i % 3 === 0 ? 0 : 1,
+    garage: ['legion', 'marina', 'airport'][i % 3],
+    job,
+  }
+})
 
 function browse(data: any): BrowseResult {
   const perPage = 25
@@ -100,6 +104,24 @@ function handle(endpoint: string, data: any): unknown {
     case 'admin:vehicle:delete':
     case 'admin:vehicle:move':
       return { ok: true }
+    case 'admin:vehicle:owner': {
+      const row = MOCK_ROWS.find((r) => r.plate === data?.plate)
+      if (!row) return { ok: false, err: 'not_found' }
+      if (data?.mode === 'job') {
+        if (!data?.job) return { ok: false, err: 'bad_job' }
+        row.owner = data.job
+        row.ownerName = undefined
+        row.job = data.job
+      } else {
+        const pl = state.onlinePlayers.find((x) => x.id === Number(data?.target))
+        const ident = pl?.identifier || String(data?.identifier || '')
+        if (!ident) return { ok: false, err: 'no_target' }
+        row.owner = ident
+        row.ownerName = pl?.name
+        row.job = data?.job || undefined
+      }
+      return { ok: true }
+    }
     case 'admin:vehicle:browse':
       return browse(data)
     case 'admin:items:save': {
