@@ -413,6 +413,7 @@ MSK.Register('msk_givevehicle:admin:perms:saveGroup', function(src, data)
         { name, json.encode(matrix) }
     )
     AdminStore.LoadPermissions()
+    AdminPerms.EnsureAces()
     AdminPerms.Invalidate()
     return ok(src)
 end)
@@ -447,6 +448,7 @@ MSK.Register('msk_givevehicle:admin:perms:dashboardGroups', function(src, data)
         { 'dashboardGroups', json.encode(list) }
     )
     AdminStore.LoadSettings()
+    AdminPerms.EnsureAces()
     AdminPerms.Invalidate()
     return ok(src)
 end)
@@ -456,6 +458,12 @@ MSK.Register('msk_givevehicle:admin:perms:validateGroup', function(src, data)
     local name = normGroup(type(data) == 'table' and data.name or nil)
     if not name then return { ok = true, valid = false } end
     if AdminPerms.IsBlacklisted(name) then return { ok = true, valid = false, blacklisted = true } end
+
+    -- A group that was never used before has no ace object yet, so the membership
+    -- check below would come back empty for everyone. Register it first and give
+    -- the command buffer a frame to catch up.
+    AdminPerms.EnsureAce(name)
+    Wait(0)
 
     local found = false
     for _, pid in ipairs(GetPlayers()) do

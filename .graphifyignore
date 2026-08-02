@@ -1,0 +1,17 @@
+# Graphify-spezifische Ausschlüsse
+#
+# Syntax wie .gitignore. Die Datei wird MIT der .gitignore gemerged und kann nur
+# zusätzlich ausschließen, nie etwas wieder einschließen.
+#
+# NICHT nötig: node_modules/, dist/, build/, out/, venv/, __pycache__, coverage/
+# Die überspringt graphify bereits selbst (_SKIP_DIRS).
+#
+# Nötig ist das hier, weil graphify auch Bilder (.png/.jpg/.jpeg/.gif/.webp/.svg)
+# und HTML als Corpus einliest, nicht nur Code.
+
+# Gebaute NUI. Die Quelle liegt in web/src und wird indiziert, das Build-Ergebnis
+# hier wäre nur eine minifizierte Dublette davon.
+html/
+
+# Banner fürs Shop-Listing, kein Architektur-Inhalt.
+.assets/

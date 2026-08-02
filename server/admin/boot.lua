@@ -36,6 +36,8 @@ AddEventHandler('onResourceStart', function(resource)
     createTables()
     AdminSeed.Run(false)
     AdminStore.LoadAll()
+    -- Needs the loaded permission matrix, so it has to run after LoadAll().
+    AdminPerms.EnsureAces()
     Items.RegisterAll()
     AdminCommand.Register(Config.adminCommand)
 

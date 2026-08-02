@@ -4,6 +4,66 @@ All notable changes to this script are documented here.
 
 ---
 
+## [3.1.1] — 2026-08-01 — Dashboard Access on ESX, QBCore and Qbox
+
+### Fixed
+
+- **Admins could not open the dashboard even though their `server.cfg` gave them
+  the group.** Two things were stacked on top of each other here. First, FiveM
+  keeps principals and ace objects apart: a line like `add_principal
+  identifier.license:xxx group.admin` only makes that player a *member* of the
+  group, it does not create the ace object of the same name that the check was
+  looking for. Unless someone had also written `add_ace group.admin group.admin
+  allow` by hand, the check came back empty. Second, the frameworks do not even
+  agree on how a group principal is named: ESX and Qbox use `group.admin`, QBCore
+  uses `qbcore.admin`, and that is not something you can configure away, it is
+  what `/addpermission` and `QBCore.Functions.AddPermission` write. QBCore also
+  only ever links `qbcore.god` to `group.admin`, so anyone below god level was a
+  member of no `group.*` principal at all. On ESX this often stayed invisible
+  because the group from the `users` table caught it, and that fallback does not
+  exist on QBCore. The script now registers its own ace object per group on start
+  and points both spellings at it, for `admin`, for every group in
+  `Config.dashboardGroups` and for every group in the permission matrix. So a
+  plain `add_principal ... group.mod` and a `/addpermission 1 mod` both get you
+  in, and groups you add on the Permissions tab are covered right away without a
+  restart. *(fxmanifest.lua, server/admin/permissions.lua, server/admin/boot.lua,
+  server/admin/api.lua)*
+- **Checking a group name on the Permissions tab reported "not found" for brand
+  new groups.** The check ran before the group existed as an ace object, so it
+  could never find anyone in it. The group is registered first now.
+  *(server/admin/api.lua)*
+
+- **`Access denied for command add_ace` spam on every server start.** FiveM checks
+  `add_ace` against the resource that runs it, and no resource holds that right by
+  default, so the ace objects were never actually created. Every attempt was refused
+  and only printed an error. On ESX this went unnoticed because the framework group
+  caught it. The aces are registered through msk_core now, which is the one resource
+  your server.cfg already grants that right, and the script checks up front whether it
+  is allowed instead of spamming the console.
+  *(server/admin/permissions.lua)*
+
+### Requires msk_core 3.3.0
+
+This release uses `MSK.AddRawAce` and `MSK.CanAddAce`, both added in msk_core 3.3.0.
+Update msk_core along with this script, and make sure your server.cfg has the msk_core
+ace lines. They are the ones the msk_core documentation has always listed and they
+cover every MSK script at once:
+
+```cfg
+add_ace resource.msk_core command.add_ace allow
+add_ace resource.msk_core command.remove_ace allow
+add_ace resource.msk_core command.add_principal allow
+add_ace resource.msk_core command.remove_principal allow
+```
+
+If they are missing nothing breaks, the script says so on start and group access falls
+back to your framework group.
+
+There is nothing to rebuild and no database change. Replace the resource files and
+restart it.
+
+---
+
 ## [3.1.0] — 2026-08-01 — Society Ownership for Existing Vehicles
 
 ### Added
