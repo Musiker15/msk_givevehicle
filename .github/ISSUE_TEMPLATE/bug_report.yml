@@ -1,0 +1,109 @@
+name: Bug Report
+description: Report a bug or unexpected behavior in MSK GiveVehicle
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Please fill out the fields below so we can reproduce and fix it quickly.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you start
+      options:
+        - label: I am running the latest release of msk_givevehicle
+          required: true
+        - label: I searched existing issues and this has not been reported yet
+          required: true
+        - label: I am running the latest release of msk_core
+          required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear and concise description of the bug.
+      placeholder: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: How can we reproduce the behavior?
+      placeholder: |
+        1. Open the dashboard with '/adgiveveh'
+        2. Go to the '...' tab
+        3. Click '...'
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console output / errors
+      description: Paste any relevant server, client or F8 console output. This will be rendered as code, no backticks needed.
+      render: shell
+  - type: input
+    id: version
+    attributes:
+      label: msk_givevehicle version
+      placeholder: "3.1.1"
+    validations:
+      required: true
+  - type: input
+    id: coreversion
+    attributes:
+      label: msk_core version
+      placeholder: "3.3.1"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where does it happen?
+      options:
+        - Admin dashboard (Give Vehicle)
+        - Admin dashboard (Job Vehicle)
+        - Admin dashboard (Vehicles browser)
+        - Admin dashboard (Item Vehicles)
+        - Admin dashboard (Settings)
+        - Admin dashboard (Permissions)
+        - Server console commands
+        - Vehicle keys
+        - Database / installation
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: garage
+    attributes:
+      label: Is msk_garage started?
+      options:
+        - "Yes"
+        - "No"
+        - Not relevant
+    validations:
+      required: true
+  - type: dropdown
+    id: keys
+    attributes:
+      label: Vehicle key script
+      options:
+        - msk_vehiclekeys
+        - VehicleKeyChain
+        - vehicles_keys
+        - None
+        - Other
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Anything else that might help, such as your ESX version, artifact version, other resources involved, or your permission setup.
