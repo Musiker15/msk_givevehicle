@@ -22,13 +22,12 @@ local function plateForms(plate)
     return trimmed, padded
 end
 
+-- Every database access below goes through MSK.VehicleStore, which knows the
+-- table and column layout of the running framework: owned_vehicles on ESX,
+-- player_vehicles on QBCore and Qbox, where the properties live in `mods` and
+-- the model in its own column. This resource used to speak ESX only.
 DoesVehicleWithPlateExist = function(plate)
-    local trimmed, padded = plateForms(plate)
-    local count = MySQL.scalar.await(
-        'SELECT COUNT(*) FROM owned_vehicles WHERE plate = ? OR plate = ?',
-        { trimmed, padded }
-    ) or 0
-    return count > 0
+    return MSK.VehicleStore.CountByPlate(plate) > 0
 end
 
 local function generatePlate()
@@ -126,21 +125,17 @@ end
 ----------------------------------------------------------------
 local function insertVehicle(owner, plate, props, vehicleType, job, garage)
     local trimmed = plateForms(plate)
-    local cols = { 'owner', 'plate', 'vehicle', 'stored', 'type' }
-    local vals = { '?', '?', '?', '?', '?' }
-    local params = { owner, trimmed, json.encode(props), 1, vehicleType }
 
-    if job then
-        cols[#cols + 1] = 'job'; vals[#vals + 1] = '?'; params[#params + 1] = job
-    end
-    if garage and garage ~= '' then
-        cols[#cols + 1] = 'garage'; vals[#vals + 1] = '?'; params[#params + 1] = garage
-    end
-
-    MySQL.insert.await(
-        ('INSERT INTO owned_vehicles (%s) VALUES (%s)'):format(table.concat(cols, ', '), table.concat(vals, ', ')),
-        params
-    )
+    return MSK.VehicleStore.Insert({
+        owner  = owner,
+        plate  = trimmed,
+        props  = props,
+        model  = props and props.model,
+        stored = true,
+        type   = vehicleType,
+        job    = job,
+        garage = (garage and garage ~= '') and garage or nil,
+    })
 end
 
 ----------------------------------------------------------------
@@ -168,7 +163,7 @@ end
 -- opts: captureClient, targetId, type, model, plate?, garage?, job?, bool?,
 --       notifySrc?, isItem?, itemName?, console?
 function Core.Give(opts)
-    local xTarget = ESX.GetPlayerFromId(opts.targetId)
+    local xTarget = MSK.GetPlayer(opts.targetId)
     if not xTarget then return { ok = false, err = 'no_target' } end
 
     if type(opts.model) ~= 'string' or #opts.model == 0 then return { ok = false, err = 'bad_model' } end
@@ -251,8 +246,8 @@ RegisterServerEvent('msk_givevehicle:admin:captured', function(requestId, props)
     end
 
     if p.isItem and p.itemName then
-        local xPlayer = ESX.GetPlayerFromId(p.targetId)
-        if xPlayer then xPlayer.removeInventoryItem(p.itemName, 1) end
+        local xPlayer = MSK.GetPlayer(p.targetId)
+        if xPlayer then xPlayer.RemoveItem(p.itemName, 1) end
         notify(p.notifySrc, Translation[Config.Locale]['item_success'], 'success')
     else
         logging('debug', Translation[Config.Locale]['vehicle_successfully_added']:format(p.model, p.plate, p.targetId))
@@ -279,18 +274,18 @@ end)
 -- Spawn an owned vehicle by plate at a target player.
 ----------------------------------------------------------------
 function Core.Spawn(opts)
-    local xTarget = ESX.GetPlayerFromId(opts.targetId)
+    local xTarget = MSK.GetPlayer(opts.targetId)
     if not xTarget then return { ok = false, err = 'no_target' } end
 
-    local trimmed, padded = plateForms(opts.plate)
-    local row = MySQL.single.await('SELECT * FROM owned_vehicles WHERE plate = ? OR plate = ? LIMIT 1', { trimmed, padded })
-    if not row then return { ok = false, err = 'not_found' } end
+    local trimmed = plateForms(opts.plate)
+    local vehicle = MSK.VehicleStore.GetByPlate(trimmed)
+    if not vehicle then return { ok = false, err = 'not_found' } end
 
-    local okd, props = pcall(json.decode, row.vehicle)
-    if not okd or type(props) ~= 'table' then return { ok = false, err = 'bad_data' } end
+    local props = vehicle.props
+    if type(props) ~= 'table' or not next(props) then return { ok = false, err = 'bad_data' } end
 
     TriggerClientEvent('msk_givevehicle:spawnVehicle', xTarget.source, props)
-    MySQL.update.await('UPDATE owned_vehicles SET stored = 0 WHERE plate = ? OR plate = ?', { trimmed, padded })
+    MSK.VehicleStore.Update(trimmed, { stored = false })
     return { ok = true }
 end
 
@@ -298,9 +293,9 @@ end
 -- Delete an owned vehicle by plate.
 ----------------------------------------------------------------
 function Core.Delete(opts)
-    local trimmed, padded = plateForms(opts.plate)
-    local affected = MySQL.update.await('DELETE FROM owned_vehicles WHERE plate = ? OR plate = ?', { trimmed, padded }) or 0
-    if affected and affected > 0 then
+    local trimmed = plateForms(opts.plate)
+
+    if MSK.VehicleStore.Delete(trimmed) then
         if Config.VehicleKeys and Config.VehicleKeys.enable then
             Keys.RemoveKey(trimmed)
         end
@@ -320,13 +315,13 @@ function Core.Move(opts)
     local target = type(opts.garage) == 'string' and garages[opts.garage]
     if not target then return { ok = false, err = 'unknown_garage' } end
 
-    local trimmed, padded = plateForms(opts.plate)
-    local row = MySQL.single.await('SELECT `type` FROM owned_vehicles WHERE plate = ? OR plate = ? LIMIT 1', { trimmed, padded })
-    if not row then return { ok = false, err = 'not_found' } end
+    local trimmed = plateForms(opts.plate)
+    local vehicle = MSK.VehicleStore.GetByPlate(trimmed)
+    if not vehicle then return { ok = false, err = 'not_found' } end
 
     -- Light category check: the vehicle's category must be servable by the garage.
     if #target.type > 0 then
-        local vehCat = AdminPerms.CategoryForType(row.type)
+        local vehCat = AdminPerms.CategoryForType(vehicle.type)
         local match = false
         for _, t in ipairs(target.type) do
             if AdminPerms.CategoryForType(t) == vehCat then match = true; break end
@@ -334,7 +329,7 @@ function Core.Move(opts)
         if not match then return { ok = false, err = 'type_mismatch' } end
     end
 
-    MySQL.update.await('UPDATE owned_vehicles SET garage = ? WHERE plate = ? OR plate = ?', { target.id, trimmed, padded })
+    MSK.VehicleStore.Update(trimmed, { garage = target.id })
     return { ok = true }
 end
 
@@ -347,12 +342,9 @@ end
 -- opts: plate, mode, job?, identifier?
 ----------------------------------------------------------------
 function Core.SetOwner(opts)
-    local trimmed, padded = plateForms(opts.plate)
-    local row = MySQL.single.await(
-        'SELECT `owner`, `vehicle`, `job` FROM owned_vehicles WHERE plate = ? OR plate = ? LIMIT 1',
-        { trimmed, padded }
-    )
-    if not row then return { ok = false, err = 'not_found' } end
+    local trimmed = plateForms(opts.plate)
+    local vehicle = MSK.VehicleStore.GetByPlate(trimmed)
+    if not vehicle then return { ok = false, err = 'not_found' } end
 
     local mode = (opts.mode == 'job') and 'job' or 'player'
     local job = nil
@@ -372,31 +364,24 @@ function Core.SetOwner(opts)
     end
 
     -- Nothing to do (keeps the key handling below from firing needlessly).
-    if owner == row.owner and job == row.job then
+    if owner == vehicle.owner and job == vehicle.job then
         return { ok = true, owner = owner, job = job, mode = mode }
     end
 
-    -- job is written as a real NULL when cleared, so ESX/msk_garage stop treating
-    -- the row as a job vehicle. Separate statements because a nil in the params
-    -- table would collapse the parameter list.
-    if job then
-        MySQL.update.await(
-            'UPDATE owned_vehicles SET owner = ?, job = ? WHERE plate = ? OR plate = ?',
-            { owner, job, trimmed, padded }
-        )
-    else
-        MySQL.update.await(
-            'UPDATE owned_vehicles SET owner = ?, job = NULL WHERE plate = ? OR plate = ?',
-            { owner, trimmed, padded }
-        )
+    -- Clearing the job writes a real NULL, so nothing keeps treating the row as
+    -- a job vehicle. VehicleStore.Update skips nil values, so the clear needs
+    -- its own explicit call.
+    MSK.VehicleStore.Update(trimmed, { owner = owner, job = job })
+
+    if not job then
+        MSK.VehicleStore.ClearJob(trimmed)
     end
 
     -- Keys follow the owner: drop every key for the plate, then hand one to the
     -- new owner (identifier or job name, mirroring what Core.Give does).
     if Config.VehicleKeys and Config.VehicleKeys.enable then
         Keys.RemoveKey(trimmed)
-        local okd, props = pcall(json.decode, row.vehicle or '{}')
-        Keys.GiveKey({ identifier = owner }, trimmed, (okd and type(props) == 'table') and props.model or nil)
+        Keys.GiveKey({ identifier = owner }, trimmed, vehicle.model)
     end
 
     logging('debug', Translation[Config.Locale]['owner_changed']:format(trimmed, tostring(row.owner), owner))
@@ -404,97 +389,52 @@ function Core.SetOwner(opts)
 end
 
 ----------------------------------------------------------------
--- Paginated, server-side filtered browse over owned_vehicles. Designed for
--- large tables (3000+ rows): owner/plate filters run in SQL, the page is small,
--- and the model filter matches the stored model hash so it stays a single scan.
+-- Paginated, server-side filtered browse.
+--
+-- The whole query lives in MSK.VehicleStore.Browse now, because the pieces it
+-- has to get right differ per framework: the table, the column holding the
+-- properties, the model filter (a JSON scan on ESX, an indexed hash comparison
+-- on QBCore and Qbox) and the join that resolves the owner name, which comes
+-- from name columns on ESX and out of a JSON field on the other two.
 ----------------------------------------------------------------
 function Core.Browse(opts)
     opts = type(opts) == 'table' and opts or {}
-    local page = math.max(1, math.floor(tonumber(opts.page) or 1))
+
     local perPage = 25
-    local offset = (page - 1) * perPage
-
-    local q = type(opts.query) == 'string' and MSK.String.Trim(opts.query) or ''
-
-    -- Builds WHERE + params for a single attempt. The name-search clause (which
-    -- references the joined `users` table) is only emitted when `withUsers` is
-    -- true, so the no-join fallback stays valid SQL.
-    local function build(withUsers)
-        local where, params = {}, {}
-        if #q > 0 then
-            local like = '%' .. q .. '%'
-            if withUsers then
-                where[#where + 1] = "(ov.plate LIKE ? OR ov.owner LIKE ? OR CONCAT(IFNULL(u.firstname,''),' ',IFNULL(u.lastname,'')) LIKE ?)"
-                params[#params + 1] = like; params[#params + 1] = like; params[#params + 1] = like
-            else
-                where[#where + 1] = '(ov.plate LIKE ? OR ov.owner LIKE ?)'
-                params[#params + 1] = like; params[#params + 1] = like
-            end
-        end
-        if type(opts.garage) == 'string' and #opts.garage > 0 then
-            where[#where + 1] = 'ov.garage = ?'; params[#params + 1] = opts.garage
-        end
-        if type(opts.vtype) == 'string' and #opts.vtype > 0 then
-            where[#where + 1] = 'ov.`type` = ?'; params[#params + 1] = opts.vtype
-        end
-        if type(opts.model) == 'string' and #opts.model > 0 then
-            -- Stored model is a joaat hash inside the vehicle JSON; it may be the
-            -- signed or unsigned 32-bit form depending on the ESX version, so match both.
-            local h = GetHashKey(opts.model)
-            local unsigned = (h < 0) and (h + 4294967296) or h
-            where[#where + 1] = '(ov.vehicle LIKE ? OR ov.vehicle LIKE ?)'
-            params[#params + 1] = '%"model":' .. h .. '%'
-            params[#params + 1] = '%"model":' .. unsigned .. '%'
-        end
-        return (#where > 0) and (' WHERE ' .. table.concat(where, ' AND ')) or '', params
-    end
-
-    local function run(withUsers)
-        local whereSql, params = build(withUsers)
-        local join = withUsers and ' LEFT JOIN users u ON u.identifier = ov.owner' or ''
-        local total = MySQL.scalar.await(
-            'SELECT COUNT(*) FROM owned_vehicles ov' .. join .. whereSql, params
-        ) or 0
-        local rows = MySQL.query.await(
-            'SELECT ov.plate, ov.owner, ov.vehicle, ov.`type`, ov.stored, ov.garage, ov.job' ..
-            (withUsers and ', u.firstname, u.lastname' or '') ..
-            ' FROM owned_vehicles ov' .. join .. whereSql ..
-            ' ORDER BY ov.plate LIMIT ' .. perPage .. ' OFFSET ' .. offset,
-            params
-        ) or {}
-        return total, rows
-    end
-
-    local ok, total, rows = pcall(run, true)
-    if not ok then
-        -- users table/columns missing: degrade to no-join query.
-        total, rows = run(false)
-    end
+    local result = MSK.VehicleStore.Browse({
+        page    = opts.page,
+        perPage = perPage,
+        query   = opts.query,
+        garage  = opts.garage,
+        type    = opts.vtype,
+        model   = opts.model,
+    })
 
     local out = {}
-    for _, r in ipairs(rows or {}) do
-        local name = nil
-        if r.firstname or r.lastname then
-            name = MSK.String.Trim(((r.firstname or '') .. ' ' .. (r.lastname or '')))
-            if name == '' then name = nil end
-        end
+
+    for _, vehicle in ipairs(result.vehicles or {}) do
+        local name = vehicle.ownerName and MSK.String.Trim(vehicle.ownerName) or nil
+        if name == '' then name = nil end
+
         out[#out + 1] = {
-            plate = MSK.String.Trim(r.plate or ''),
-            owner = r.owner,
+            plate = MSK.String.Trim(vehicle.plate or ''),
+            owner = vehicle.owner,
             ownerName = name,
-            type = r.type,
-            stored = tonumber(r.stored) or 0,
-            garage = r.garage,
-            job = r.job,
+            type = vehicle.type,
+            stored = vehicle.stored and 1 or 0,
+            garage = vehicle.garage,
+            job = vehicle.job,
         }
     end
+
+    local total = result.total or 0
 
     return {
         ok = true,
         rows = out,
-        total = total or 0,
-        page = page,
+        total = total,
+        page = result.page or 1,
         perPage = perPage,
-        pages = math.max(1, math.ceil((total or 0) / perPage)),
+        pages = math.max(1, math.ceil(total / perPage)),
     }
 end

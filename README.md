@@ -66,9 +66,10 @@ ALTER TABLE `owned_vehicles` ADD INDEX `idx_owner` (`owner`);
 ```
 
 ## Requirements ##
-* [ESX Legacy](https://github.com/esx-framework/esx_core)
+* [ESX Legacy](https://github.com/esx-framework/esx_core), [QBCore](https://github.com/qbcore-framework/qb-core) or [Qbox](https://github.com/Qbox-project/qbx_core) - QBCore and Qbox since v3.2.0
+* [ox_lib](https://github.com/overextended/ox_lib) - since v3.2.0
 * [oxmysql](https://github.com/overextended/oxmysql)
-* [msk_core](https://github.com/Musiker15)
+* [msk_core](https://github.com/Musiker15) - 4.0.0 or newer since v3.2.0
 * Optional: a vehicle-key script (`msk_vehiclekeys` / `VehicleKeyChain` / `vehicles_keys`)
 * Optional: `msk_garage` (enables garage selection / move)
 

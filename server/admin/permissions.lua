@@ -15,10 +15,8 @@ function AdminPerms.GetFrameworkGroup(src)
     if not MSK.GetPlayer then return nil end
     local ok, xPlayer = pcall(MSK.GetPlayer, { source = src })
     if not ok or not xPlayer then return nil end
-    if type(xPlayer.getGroup) == 'function' then
-        local g = xPlayer.getGroup()
-        if g then return tostring(g):lower() end
-    end
+    -- getGroup() is gone since msk_core 4.0.0: the player object is no longer
+    -- the raw xPlayer, and player.group is a plain string on every framework.
     if xPlayer.group then return tostring(xPlayer.group):lower() end
     return nil
 end

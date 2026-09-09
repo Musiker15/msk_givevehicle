@@ -9,7 +9,8 @@ local function register(itemName)
     if registered[itemName] then return end
     registered[itemName] = true
 
-    ESX.RegisterUsableItem(itemName, function(source)
+    -- MSK.RegisterItem covers ESX, QBCore and Qbox in a single call.
+    MSK.RegisterItem(itemName, function(source)
         -- Read the current definition lazily so dashboard edits take effect
         -- without re-registering.
         local def = Config.Vehicles and Config.Vehicles[itemName]

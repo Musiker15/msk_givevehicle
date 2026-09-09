@@ -4,6 +4,65 @@ All notable changes to this script are documented here.
 
 ---
 
+## [3.2.0] - 2026-09-09 - Runs on ESX, QBCore and Qbox
+
+### Requires msk_core 4.0.0
+
+This release uses the rewritten bridge: the unified player object, `MSK.VehicleStore`
+and `MSK.RegisterItem`. On msk_core 3.x none of the three answers in this form.
+Update msk_core along with this script.
+
+`ox_lib` is a dependency now, `es_extended` is not.
+
+### Changed
+
+- **`es_extended` is no longer a dependency.** It was listed in `dependencies`
+  and imported through `@es_extended/imports.lua`, so the resource refused to
+  start on any server without ESX. `@ox_lib/init.lua` takes its place.
+  *(fxmanifest.lua)*
+
+- **Every database access goes through `MSK.VehicleStore`.** This resource wrote
+  `owned_vehicles` directly, with ESX column names. QBCore and Qbox use
+  `player_vehicles`, keep the properties in `mods` and the spawn name in its own
+  column, so the old queries would not have found or written a single row there.
+  Insert, spawn, delete, move and the owner change all go through the store now.
+  *(server/main.lua)*
+
+- **Vehicle properties are read and written in the format of the running
+  framework.** ESX has its own layout, QBCore and Qbox use the one from `ox_lib`,
+  and these properties end up in the framework's vehicle table where every garage
+  on the server reads them back. Handing an ox_lib table to an ESX garage
+  produces a vehicle without mods, with wrong colours, or none at all. ESX is
+  fetched lazily when it is actually the running framework, everything else uses
+  `lib.getVehicleProperties` and `lib.setVehicleProperties`.
+  *(client/main.lua)*
+
+- **Spawning and deleting no longer go through `ESX.Game`.** On anything but ESX
+  the vehicle is created with `lib.requestModel` and `CreateVehicle`, and removed
+  with `DeleteVehicle` plus an `DeleteEntity` fallback.
+  *(client/main.lua)*
+
+- Usable items are registered through `MSK.RegisterItem`, which covers ESX,
+  QBCore and Qbox in one call, instead of `ESX.RegisterUsableItem`.
+  *(server/items.lua)*
+
+- Player lookups and the item removal after a give run through the unified player
+  object (`MSK.GetPlayer`, `player.RemoveItem`).
+  *(server/main.lua, server/admin/api.lua, server/admin/permissions.lua)*
+
+### Changed files
+
+```text
+fxmanifest.lua
+client/main.lua
+server/main.lua
+server/items.lua
+server/admin/api.lua
+server/admin/permissions.lua
+```
+
+---
+
 ## [3.1.1] — 2026-08-01 — Dashboard Access on ESX, QBCore and Qbox
 
 ### Fixed

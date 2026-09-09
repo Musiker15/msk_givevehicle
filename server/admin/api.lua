@@ -132,10 +132,12 @@ function AdminApi.GroupsArray()
     return out
 end
 
+-- msk_core answers this for every framework. It used to read ESX directly, so
+-- the list stayed empty on QBCore and Qbox.
 function AdminApi.JobsList()
     local out = {}
-    local jobs = (ESX and ESX.GetJobs) and ESX.GetJobs() or {}
-    for name, job in pairs(jobs) do
+
+    for name, job in pairs(MSK.GetJobs() or {}) do
         out[#out + 1] = { name = name, label = job.label or name }
     end
     table.sort(out, function(a, b) return (a.label or a.name):lower() < (b.label or b.name):lower() end)
@@ -144,9 +146,9 @@ end
 
 function AdminApi.OnlinePlayers()
     local out = {}
-    local players = (ESX and ESX.GetExtendedPlayers) and ESX.GetExtendedPlayers() or {}
-    for _, xPlayer in pairs(players) do
-        local name = xPlayer.getName and xPlayer.getName() or xPlayer.name
+
+    for _, xPlayer in pairs(MSK.GetPlayers() or {}) do
+        local name = xPlayer.name
         out[#out + 1] = {
             id = xPlayer.source,
             name = name or ('ID ' .. xPlayer.source),
@@ -293,7 +295,7 @@ MSK.Register('msk_givevehicle:admin:vehicle:owner', function(src, data)
     -- Job must be a real ESX job (society owned rows are looked up by that name).
     local job = str(data.job, 50)
     if job and #job > 0 then
-        local jobs = (ESX and ESX.GetJobs) and ESX.GetJobs() or {}
+        local jobs = MSK.GetJobs() or {}
         if not jobs[job] then return fail('bad_job') end
     else
         job = nil
@@ -306,7 +308,7 @@ MSK.Register('msk_givevehicle:admin:vehicle:owner', function(src, data)
     if mode == 'player' then
         local target = tonumber(data.target)
         if target then
-            local xTarget = ESX.GetPlayerFromId(target)
+            local xTarget = MSK.GetPlayer(target)
             if not xTarget then return fail('no_target') end
             identifier = xTarget.identifier
         else

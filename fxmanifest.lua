@@ -4,13 +4,17 @@ games { 'gta5' }
 author 'Musiker15 - MSK Scripts'
 name 'msk_givevehicle'
 description 'Give, Spawn, Delete & Manage Vehicles via an in-game Admin Dashboard'
-version '3.1.1'
+version '3.2.0'
 license 'LGPL-3.0-or-later'
 
 lua54 'yes'
 
+-- ox_lib replaces @es_extended/imports.lua: vehicle properties are read and
+-- written through it on QBCore and Qbox, and ESX is fetched lazily in
+-- client/main.lua when it is actually the running framework. Importing ESX here
+-- made the resource refuse to start on any server without it.
 shared_scripts {
-    '@es_extended/imports.lua',
+    '@ox_lib/init.lua',
     '@msk_core/import.lua',
     'config.lua',
     'translation.lua',
@@ -57,7 +61,7 @@ files {
 }
 
 dependencies {
-    'es_extended',
+    'ox_lib',
     'oxmysql',
     'msk_core',
 }
